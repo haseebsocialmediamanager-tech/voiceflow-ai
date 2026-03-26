@@ -41,7 +41,11 @@ export default function AppPage() {
   const recognitionRef = useRef<any>(null);
   const accumulatedRef = useRef<string>("");
   const streamRef = useRef<MediaStream | null>(null);
+  const languageRef = useRef(language);
   const isLang = getLang(language);
+
+  // Keep languageRef in sync so callbacks always have the latest language
+  useEffect(() => { languageRef.current = language; }, [language]);
 
   // Detect mobile
   useEffect(() => {
@@ -62,7 +66,7 @@ export default function AppPage() {
     const r = new SR();
     r.continuous = true;
     r.interimResults = true;
-    r.lang = language;
+    r.lang = languageRef.current;
     r.maxAlternatives = 1;
 
     r.onresult = (event: any) => {
@@ -97,13 +101,14 @@ export default function AppPage() {
     };
 
     return r;
-  }, [language, setTranscript, isLang.nativeName]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setTranscript]);
 
   // Rebuild recognition whenever language changes
   useEffect(() => {
     const r = buildRecognition();
     if (r) recognitionRef.current = r;
-  }, [buildRecognition]);
+  }, [buildRecognition, language]);
 
   const startRecording = useCallback(async () => {
     if (!recognitionRef.current) {
@@ -122,6 +127,8 @@ export default function AppPage() {
     // Rebuild with current language to ensure fresh instance
     const r = buildRecognition();
     if (!r) return;
+    // Force language assignment right before start — prevents Android Chrome stale-lang bug
+    r.lang = languageRef.current;
     r._shouldRestart = true;
     recognitionRef.current = r;
 
@@ -138,7 +145,8 @@ export default function AppPage() {
     } catch (e) {
       toast.error("Could not start recording. Try again.");
     }
-  }, [buildRecognition, setRecording, setTranscript, setEnhanced]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [buildRecognition, setRecording, setTranscript, setEnhanced, languageRef]);
 
   const stopRecording = useCallback(async () => {
     if (recognitionRef.current) {

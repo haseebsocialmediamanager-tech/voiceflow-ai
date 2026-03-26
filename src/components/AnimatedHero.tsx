@@ -7,161 +7,91 @@ import { Mic } from "lucide-react";
 const ROTATING_WORDS = [
   "Faster",
   "Smarter",
-  "Clearer",
   "Anywhere",
-  "In Any Language",
   "Privately",
+  "In Urdu",
+  "In Arabic",
+  "In Hindi",
 ];
 
 const LANGUAGES_TICKER = [
-  { text: "Hello, world!", lang: "English" },
-  { text: "ہیلو، دنیا!", lang: "Urdu" },
-  { text: "مرحبا بالعالم!", lang: "Arabic" },
-  { text: "नमस्ते दुनिया!", lang: "Hindi" },
-  { text: "Hola, mundo!", lang: "Spanish" },
-  { text: "Bonjour le monde!", lang: "French" },
-  { text: "こんにちは世界！", lang: "Japanese" },
-  { text: "안녕하세요 세계!", lang: "Korean" },
-  { text: "Привет, мир!", lang: "Russian" },
-  { text: "مرحبا بالعالم!", lang: "Persian" },
+  { text: "Hello, world!", lang: "English", rtl: false },
+  { text: "ہیلو، دنیا!", lang: "Urdu", rtl: true },
+  { text: "مرحبا بالعالم!", lang: "Arabic", rtl: true },
+  { text: "नमस्ते दुनिया!", lang: "Hindi", rtl: false },
+  { text: "Hola, mundo!", lang: "Spanish", rtl: false },
+  { text: "Bonjour le monde!", lang: "French", rtl: false },
+  { text: "こんにちは世界！", lang: "Japanese", rtl: false },
+  { text: "안녕하세요 세계!", lang: "Korean", rtl: false },
+  { text: "Привет, мир!", lang: "Russian", rtl: false },
+  { text: "فارسی سلام!", lang: "Persian", rtl: true },
 ];
-
-function FloatingParticle({ x, y, size, delay, duration }: any) {
-  return (
-    <motion.div
-      className="absolute rounded-full opacity-20"
-      style={{
-        left: `${x}%`,
-        top: `${y}%`,
-        width: size,
-        height: size,
-        background: "radial-gradient(circle, rgba(99,102,241,0.8) 0%, transparent 70%)",
-      }}
-      animate={{
-        y: [0, -30, 0],
-        x: [0, 15, 0],
-        opacity: [0.1, 0.3, 0.1],
-        scale: [1, 1.2, 1],
-      }}
-      transition={{
-        duration,
-        delay,
-        repeat: Infinity,
-        ease: "easeInOut",
-      }}
-    />
-  );
-}
 
 export function AnimatedHero() {
   const [wordIndex, setWordIndex] = useState(0);
   const [langIndex, setLangIndex] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setWordIndex((i) => (i + 1) % ROTATING_WORDS.length);
-    }, 2200);
-    return () => clearInterval(interval);
+    const i = setInterval(() => setWordIndex((v) => (v + 1) % ROTATING_WORDS.length), 2000);
+    return () => clearInterval(i);
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLangIndex((i) => (i + 1) % LANGUAGES_TICKER.length);
-    }, 1800);
-    return () => clearInterval(interval);
+    const i = setInterval(() => setLangIndex((v) => (v + 1) % LANGUAGES_TICKER.length), 1800);
+    return () => clearInterval(i);
   }, []);
 
-  const particles = Array.from({ length: 20 }, (_, i) => ({
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: 4 + Math.random() * 12,
-    delay: Math.random() * 4,
-    duration: 4 + Math.random() * 6,
-  }));
-
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
-      {/* Particle field */}
-      <div className="absolute inset-0 pointer-events-none">
-        {particles.map((p, i) => (
-          <FloatingParticle key={i} {...p} />
-        ))}
-      </div>
+    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden">
 
-      {/* Big background orbs */}
-      <div
-        className="orb-1 absolute top-[-10%] left-[10%] w-[700px] h-[700px] rounded-full pointer-events-none"
-        style={{
-          background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)",
-        }}
-      />
-      <div
-        className="orb-2 absolute bottom-[-15%] right-[5%] w-[600px] h-[600px] rounded-full pointer-events-none"
-        style={{
-          background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)",
-        }}
-      />
+      {/* Background orbs */}
+      <div className="orb-1 absolute top-[-10%] left-[10%] w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)" }} />
+      <div className="orb-2 absolute bottom-[-15%] right-[5%] w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)" }} />
 
-      {/* Grid overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+      {/* Grid */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
         style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+          backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
-        }}
-      />
+        }} />
 
-      {/* Content */}
-      <div className="relative z-10 text-center max-w-5xl mx-auto">
+      {/* Content — full width with max-w, centered */}
+      <div className="relative z-10 text-center w-full max-w-2xl mx-auto">
+
         {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-white/10 text-xs text-white/50 mb-8"
-        >
-          <motion.span
-            className="w-2 h-2 rounded-full bg-emerald-400"
-            animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-          25+ languages · Privacy-first · Works on Windows & Mac
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-white/10 text-xs text-white/50 mb-6 max-w-full">
+          <motion.span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"
+            animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
+          <span className="truncate">25+ languages · Privacy-first · Windows, Mac & Android</span>
         </motion.div>
 
-        {/* Main headline */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+        {/* Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="mb-6"
+          className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.92] mb-5"
         >
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9] mb-2">
-            <span className="text-white">Speak.</span>
-            <br />
-            <span className="gradient-text">Enhance.</span>
-            <br />
-            <span className="text-white">Done.</span>
-          </h1>
-        </motion.div>
+          <span className="text-white">Speak.</span><br />
+          <span className="gradient-text">Enhance.</span><br />
+          <span className="text-white">Done.</span>
+        </motion.h1>
 
-        {/* Rotating word — inline, no fixed width */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="flex items-center justify-center mb-6 h-10 overflow-hidden"
-        >
-          <span className="text-2xl md:text-3xl font-light text-white/40 mr-2">Write</span>
-          <div className="relative h-10 overflow-hidden" style={{ minWidth: "8rem" }}>
+        {/* Write [word] — tight, no overflow */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+          className="flex items-center justify-center mb-5 overflow-hidden" style={{ height: "2.5rem" }}>
+          <span className="text-xl sm:text-2xl font-light text-white/40 mr-2 flex-shrink-0">Write</span>
+          <div className="relative overflow-hidden flex-shrink-0" style={{ height: "2.5rem", minWidth: "120px", maxWidth: "200px" }}>
             <AnimatePresence mode="wait">
               <motion.span
                 key={wordIndex}
-                initial={{ y: 32, opacity: 0 }}
+                initial={{ y: 36, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -32, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="absolute inset-0 flex items-center text-2xl md:text-3xl font-bold gradient-text whitespace-nowrap"
+                exit={{ y: -36, opacity: 0 }}
+                transition={{ duration: 0.28, ease: "easeInOut" }}
+                className="absolute inset-0 flex items-center text-xl sm:text-2xl font-bold gradient-text whitespace-nowrap"
               >
                 {ROTATING_WORDS[wordIndex]}
               </motion.span>
@@ -169,140 +99,91 @@ export function AnimatedHero() {
           </div>
         </motion.div>
 
-        {/* Subtitle */}
+        {/* Subtitle — properly wrapped on mobile */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-lg md:text-xl text-white/40 max-w-2xl mx-auto mb-10 leading-relaxed"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          className="text-sm sm:text-base md:text-lg text-white/45 mx-auto mb-8 leading-relaxed px-2"
+          style={{ maxWidth: "480px" }}
         >
-          The AI dictation tool that actually works — on Windows, Mac & Android.
-          Privacy-first, developer-ready, and fluent in 25+ languages.
+          The AI dictation tool that actually works on every platform.
+          Privacy-first, fluent in 25+ languages including Urdu &amp; Arabic.
         </motion.p>
 
         {/* Language ticker */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="flex items-center justify-center gap-3 mb-10 h-8"
-        >
-          <div className="w-5 h-5 rounded-full bg-brand-500/20 flex items-center justify-center">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+          className="flex items-center justify-center gap-2 mb-8 h-8 overflow-hidden">
+          <div className="w-5 h-5 rounded-full bg-brand-500/20 flex items-center justify-center flex-shrink-0">
             <Mic size={10} className="text-brand-400" />
           </div>
           <AnimatePresence mode="wait">
-            <motion.div
-              key={langIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center gap-2"
-            >
-              <span
-                className="text-base text-white/70"
-                dir={["Urdu", "Arabic", "Persian"].includes(LANGUAGES_TICKER[langIndex].lang) ? "rtl" : "ltr"}
-              >
+            <motion.div key={langIndex}
+              initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.25 }}
+              className="flex items-center gap-2 overflow-hidden">
+              <span className="text-sm sm:text-base text-white/70 truncate max-w-[160px] sm:max-w-none"
+                dir={LANGUAGES_TICKER[langIndex].rtl ? "rtl" : "ltr"}
+                style={{ fontFamily: LANGUAGES_TICKER[langIndex].rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}>
                 {LANGUAGES_TICKER[langIndex].text}
               </span>
-              <span className="text-xs text-white/25 border border-white/10 px-2 py-0.5 rounded-full">
+              <span className="text-xs text-white/25 border border-white/10 px-2 py-0.5 rounded-full flex-shrink-0">
                 {LANGUAGES_TICKER[langIndex].lang}
               </span>
             </motion.div>
           </AnimatePresence>
         </motion.div>
 
-        {/* CTA buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.65 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          <motion.a
-            href="/app"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            className="group relative flex items-center gap-2 px-8 py-4 rounded-2xl bg-brand-600 font-semibold text-base overflow-hidden"
-            style={{ boxShadow: "0 0 40px rgba(99,102,241,0.4)" }}
-          >
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-brand-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            />
-            <span className="relative flex items-center gap-2">
-              <Mic size={18} />
-              Start Dictating Free
-            </span>
-          </motion.a>
-
-          <motion.a
-            href="#flow-for"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-2 px-8 py-4 rounded-2xl glass hover:bg-white/5 font-medium text-base text-white/60 hover:text-white transition-all"
-          >
+        {/* CTAs — stacked on mobile */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8 px-4">
+          <a href="/app"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-2xl bg-brand-600 font-semibold text-base transition-all touch-manipulation"
+            style={{ boxShadow: "0 0 30px rgba(99,102,241,0.4)", WebkitTapHighlightColor: "transparent" }}>
+            <Mic size={18} />
+            Start Dictating Free
+          </a>
+          <a href="#flow-for"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-2xl glass font-medium text-base text-white/60 hover:text-white transition-all touch-manipulation"
+            style={{ WebkitTapHighlightColor: "transparent" }}>
             Who is it for?
-          </motion.a>
+          </a>
+        </motion.div>
+
+        {/* Social proof */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
+          className="flex items-center justify-center gap-4 text-xs text-white/25 flex-wrap px-4">
+          <span className="flex items-center gap-1"><span className="text-amber-400">★★★★★</span> 4.9/5</span>
+          <span className="hidden sm:block w-px h-4 bg-white/10" />
+          <span>No credit card required</span>
+          <span className="hidden sm:block w-px h-4 bg-white/10" />
+          <span>25+ languages</span>
         </motion.div>
 
         {/* Animated flag row */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="mt-10 overflow-hidden w-full max-w-lg mx-auto"
-        >
-          <motion.div
-            className="flex gap-3"
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
+          className="mt-8 overflow-hidden w-full">
+          <motion.div className="flex gap-2"
             animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-          >
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}>
             {["🇺🇸","🇵🇰","🇸🇦","🇮🇳","🇪🇸","🇫🇷","🇩🇪","🇨🇳","🇯🇵","🇰🇷","🇷🇺","🇮🇷","🇧🇩","🇧🇷","🇹🇷","🇮🇩",
               "🇺🇸","🇵🇰","🇸🇦","🇮🇳","🇪🇸","🇫🇷","🇩🇪","🇨🇳","🇯🇵","🇰🇷","🇷🇺","🇮🇷","🇧🇩","🇧🇷","🇹🇷","🇮🇩",
             ].map((flag, i) => (
-              <span
-                key={i}
-                className="text-2xl shrink-0 w-10 h-10 flex items-center justify-center rounded-xl"
-                style={{ background: "rgba(255,255,255,0.04)" }}
-              >
+              <span key={i}
+                className="text-xl flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl"
+                style={{ background: "rgba(255,255,255,0.04)" }}>
                 {flag}
               </span>
             ))}
           </motion.div>
         </motion.div>
-
-        {/* Social proof */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-          className="flex items-center justify-center gap-6 mt-12 text-sm text-white/25"
-        >
-          <div className="flex items-center gap-1.5">
-            <span className="text-amber-400">★★★★★</span>
-            <span>4.9/5</span>
-          </div>
-          <div className="w-px h-4 bg-white/10" />
-          <span>No credit card required</span>
-          <div className="w-px h-4 bg-white/10" />
-          <span>25+ languages</span>
-        </motion.div>
       </div>
 
       {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-      >
-        <span className="text-xs text-white/20">Scroll to explore</span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-5 h-8 rounded-full border border-white/10 flex items-start justify-center pt-1.5"
-        >
-          <div className="w-1 h-2 rounded-full bg-white/20" />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
+        <span className="text-xs text-white/15">Scroll</span>
+        <motion.div animate={{ y: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}
+          className="w-4 h-7 rounded-full border border-white/10 flex items-start justify-center pt-1">
+          <div className="w-0.5 h-1.5 rounded-full bg-white/20" />
         </motion.div>
       </motion.div>
     </div>
