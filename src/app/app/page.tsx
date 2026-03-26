@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic, MicOff, Copy, Trash2, Settings, Clock, RotateCcw,
-  Check, Loader2, ArrowLeft, ChevronDown, Keyboard, Sparkles, X,
+  Check, Loader2, ArrowLeft, ChevronDown, Keyboard, Sparkles, X, Wand2, SpellCheck,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -221,6 +221,22 @@ export default function AppPage() {
       toast.success("Re-enhanced!");
     } catch {
       toast.error("Enhancement failed");
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  const handleFix = async () => {
+    const text = activeTab === "enhanced" ? enhanced : transcript;
+    if (!text) return;
+    setIsEnhancing(true);
+    try {
+      const result = await enhanceText(text, "fix" as any, 100, language);
+      setEnhanced(result);
+      setActiveTab("enhanced");
+      toast.success("Spelling & grammar fixed!");
+    } catch {
+      toast.error("Fix failed");
     } finally {
       setIsEnhancing(false);
     }
@@ -498,10 +514,15 @@ export default function AppPage() {
                       {copied ? <Check size={13} /> : <Copy size={13} />}
                       {copied ? "Copied!" : "Copy"}
                     </button>
-                    <button onClick={handleReEnhance} disabled={!transcript}
+                    <button onClick={handleFix} disabled={!activeText || isEnhancing}
                       className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs text-white/45 active:text-white transition-colors disabled:opacity-30 touch-manipulation"
                       style={{ background: "rgba(255,255,255,0.04)", WebkitTapHighlightColor: "transparent" }}>
-                      <RotateCcw size={12} /> Re-enhance
+                      <SpellCheck size={12} /> Fix
+                    </button>
+                    <button onClick={handleReEnhance} disabled={!transcript || isEnhancing}
+                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs text-white/45 active:text-white transition-colors disabled:opacity-30 touch-manipulation"
+                      style={{ background: "rgba(255,255,255,0.04)", WebkitTapHighlightColor: "transparent" }}>
+                      <Wand2 size={12} /> Enhance
                     </button>
                     <button onClick={clearCurrent}
                       className="ml-auto flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs text-white/30 active:text-red-400 transition-colors touch-manipulation"

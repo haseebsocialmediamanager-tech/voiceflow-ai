@@ -9,6 +9,7 @@ const PROMPTS: Record<string, string> = {
   email: "Format as a professional email body. Add structure, clear paragraphs. Keep it concise and action-oriented.",
   slack: "Format as a Slack message. Short, direct, conversational. No formal greetings needed.",
   code: "Developer speaking. Preserve technical terms, variable names, framework names exactly. Output code syntax correctly: ==, =>, {}, [], etc.",
+  fix: "Fix ALL spelling mistakes, grammar errors, and typos in this text. Keep the original meaning and style exactly. Only fix errors, nothing else. Return only the corrected text.",
 };
 
 const INTENSITY: Record<string, string> = {

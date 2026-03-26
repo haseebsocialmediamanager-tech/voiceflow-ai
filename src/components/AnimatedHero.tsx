@@ -145,23 +145,23 @@ export function AnimatedHero() {
           </h1>
         </motion.div>
 
-        {/* Rotating word */}
+        {/* Rotating word — inline, no fixed width */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="flex items-center justify-center gap-3 mb-6"
+          className="flex items-center justify-center mb-6 h-10 overflow-hidden"
         >
-          <span className="text-2xl md:text-3xl font-light text-white/40">Write</span>
-          <div className="relative h-10 w-52 overflow-hidden flex items-center justify-center">
+          <span className="text-2xl md:text-3xl font-light text-white/40 mr-2">Write</span>
+          <div className="relative h-10 overflow-hidden" style={{ minWidth: "8rem" }}>
             <AnimatePresence mode="wait">
               <motion.span
                 key={wordIndex}
-                initial={{ y: 30, opacity: 0 }}
+                initial={{ y: 32, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -30, opacity: 0 }}
-                transition={{ duration: 0.35, ease: [0.32, 0, 0.67, 0] }}
-                className="absolute text-2xl md:text-3xl font-bold gradient-text"
+                exit={{ y: -32, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="absolute inset-0 flex items-center text-2xl md:text-3xl font-bold gradient-text whitespace-nowrap"
               >
                 {ROTATING_WORDS[wordIndex]}
               </motion.span>

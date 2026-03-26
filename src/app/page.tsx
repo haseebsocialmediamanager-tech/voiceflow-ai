@@ -218,6 +218,7 @@ export default function LandingPage() {
           <a href="#flow-for" className="hover:text-white transition-colors">Use Cases</a>
           <a href="#compare" className="hover:text-white transition-colors">Compare</a>
           <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+          <Link href="/install" className="hover:text-white transition-colors text-brand-400">Use Everywhere ↗</Link>
         </div>
 
         <div className="flex items-center gap-3">
