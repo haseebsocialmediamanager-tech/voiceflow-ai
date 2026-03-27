@@ -290,11 +290,9 @@
     }
   }, true);
 
-  /* ── S key — single press toggles start/stop recording ──────
-     S starts OR stops. The keystroke is suppressed so nothing
-     is typed into the field.                                    */
+  /* ── Spacebar — toggle start/stop recording ─────────────── */
   document.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 's' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+    if (e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
       e.preventDefault();
       e.stopImmediatePropagation();
       triggerToggle();
