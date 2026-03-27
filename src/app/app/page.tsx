@@ -16,7 +16,6 @@ import { EnhancementSlider } from "@/components/EnhancementSlider";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { RealWaveform } from "@/components/RealWaveform";
 import { getLang, LANGUAGES } from "@/lib/languages";
-import { useDoubleKey } from "@/hooks/useDoubleKey";
 import { injectTextAtCursor } from "@/hooks/useTextInjector";
 
 export default function AppPage() {
@@ -230,8 +229,18 @@ export default function AppPage() {
     else startRecording();
   }, [isRecording, startRecording, stopRecording]);
 
-  // SS shortcut (desktop only)
-  useDoubleKey("s", 400, toggleRecording);
+  // F2 shortcut (desktop only)
+  useEffect(() => {
+    function handleF2(e: KeyboardEvent) {
+      if (e.key !== "F2") return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+      e.preventDefault();
+      toggleRecording();
+    }
+    window.addEventListener("keydown", handleF2);
+    return () => window.removeEventListener("keydown", handleF2);
+  }, [toggleRecording]);
 
   const handleCopy = async () => {
     const text = activeTab === "enhanced" ? enhanced : transcript;
@@ -305,7 +314,7 @@ export default function AppPage() {
             <X size={16} />
           </button>
         </div>
-        {!isMobile && <p className="text-center text-xs text-white/25 mt-1.5">SS to toggle</p>}
+        {!isMobile && <p className="text-center text-xs text-white/25 mt-1.5">F2 to toggle</p>}
       </div>
     );
   }
@@ -388,7 +397,7 @@ export default function AppPage() {
               {!isMobile && (
                 <p className="text-xs text-white/25 flex items-center gap-1.5">
                   <Keyboard size={11} />
-                  Press <kbd>S S</kbd> to toggle recording from anywhere on this page
+                  Press <kbd>F2</kbd> to toggle recording from anywhere on this page
                 </p>
               )}
             </div>
@@ -407,7 +416,7 @@ export default function AppPage() {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="flex items-center gap-2 text-xs text-white/20 mb-6">
                 <Keyboard size={11} />
-                Press <kbd>S</kbd> <kbd>S</kbd> to start
+                Press <kbd>F2</kbd> to start
               </motion.div>
             )}
           </AnimatePresence>
@@ -459,7 +468,7 @@ export default function AppPage() {
               </span>
             ) : (
               <span className="text-white/25 text-xs sm:text-sm">
-                {isMobile ? "Tap mic to start" : "Click mic or press SS"}
+                {isMobile ? "Tap mic to start" : "Click mic or press F2"}
               </span>
             )}
           </div>
