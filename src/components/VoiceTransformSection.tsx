@@ -4,61 +4,27 @@ import { motion } from "framer-motion";
 import { Mic } from "lucide-react";
 import Link from "next/link";
 
-/* ── Raw speech (long sentence, spins on circle) ─────────────── */
-const RAW_LONG =
-  "Umm so basically what I wanted to say is... the deadline thing is kinda ugh you know? I told the team it should be ready by Friday although it's probably gonna slip again. There's been so much back and forth and like nobody really knows what's going on. Can you check if Sarah sent out the notes from yesterday's meeting? I think she mentioned it but I'm kinda lost. Also the client invoice — uh I forgot to send it and now they're upset but like honestly the product is really good so...   ·   ";
-
-
-/* ── Section ─────────────────────────────────────────────────── */
 export function VoiceTransformSection() {
   return (
     <section
       className="relative overflow-hidden"
-      style={{ background: "#08080f", minHeight: 560 }}
+      style={{ background: "#08080f" }}
     >
       {/* Ambient glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 60% 50% at 58% 46%, rgba(99,102,241,0.07) 0%, transparent 70%)",
+            "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(99,102,241,0.07) 0%, transparent 70%)",
         }}
       />
 
-      {/* ── Spinning circle — raw messy speech, left side ── */}
-      <div
-        className="absolute pointer-events-none"
-        style={{ top: -55, left: -175, width: 490, height: 490, zIndex: 1 }}
-      >
-        <svg width="490" height="490" viewBox="0 0 490 490">
-          <defs>
-            <path id="vf-circle-path" d="M245,28 A217,217 0 1,1 244.999,28 Z" />
-          </defs>
-          <motion.g
-            animate={{ rotate: 360 }}
-            transition={{ duration: 34, repeat: Infinity, ease: "linear" }}
-            style={{ transformOrigin: "245px 245px" }}
-          >
-            <text
-              fontSize="15.5"
-              fontFamily="Inter, system-ui, sans-serif"
-              fill="rgba(255,255,255,0.28)"
-              letterSpacing="0.8"
-            >
-              <textPath href="#vf-circle-path">
-                {RAW_LONG + RAW_LONG}
-              </textPath>
-            </text>
-          </motion.g>
-        </svg>
-      </div>
-
-      {/* ── Heading + CTA ── */}
+      {/* Heading + CTA */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="relative z-10 text-center px-4 pt-20 sm:pt-28 pb-24 sm:pb-32"
+        className="relative z-10 text-center px-6 pt-20 sm:pt-28 pb-20 sm:pb-28"
       >
         <div
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs text-white/40 mb-6"
@@ -105,7 +71,6 @@ export function VoiceTransformSection() {
           No credit card · 25+ languages · Works in 30 seconds
         </p>
       </motion.div>
-
     </section>
   );
 }
