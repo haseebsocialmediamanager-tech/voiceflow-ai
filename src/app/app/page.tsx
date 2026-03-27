@@ -350,76 +350,57 @@ export default function AppPage() {
   if (compact) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
-        <div className="glass-strong rounded-3xl p-4 flex items-center gap-3 border border-white/10 shadow-2xl">
+        <div className="rounded-3xl p-4 flex items-center gap-3 shadow-xl"
+          style={{ background: "#f5f6e4", border: "1.5px solid rgba(0,0,0,0.12)" }}>
           <motion.button onClick={toggleRecording} whileTap={{ scale: 0.9 }}
             className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${
-              isRecording ? "bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]" : "bg-brand-600 shadow-[0_0_20px_rgba(99,102,241,0.4)]"
+              isRecording ? "bg-red-500" : "bg-[#7c6fcd]"
             }`}>
-            {isRecording ? <MicOff size={22} /> : <Mic size={22} />}
+            {isRecording ? <MicOff size={22} className="text-white" /> : <Mic size={22} className="text-white" />}
           </motion.button>
-          {isRecording && (
-            <div className="flex items-center gap-0.5 px-1">
-              {[...Array(6)].map((_, i) => (
-                <motion.div key={i} className="w-0.5 rounded-full bg-brand-400"
-                  animate={{ height: [4, 8 + Math.random() * 14, 4] }}
-                  transition={{ duration: 0.4 + Math.random() * 0.3, repeat: Infinity, delay: i * 0.06 }} />
-              ))}
-            </div>
-          )}
-          <button onClick={() => setCompact(false)} className="text-white/30 hover:text-white p-1">
+          <button onClick={() => setCompact(false)} className="text-black/30 hover:text-black p-1">
             <X size={16} />
           </button>
         </div>
-        {!isMobile && <p className="text-center text-xs text-white/25 mt-1.5">F2 to toggle</p>}
+        {!isMobile && <p className="text-center text-xs text-black/30 mt-1.5">F2 to toggle</p>}
       </div>
     );
   }
 
-  // ── Full UI ──────────────────────────────────────────────────
+  // ── Full UI — creamy light theme ─────────────────────────────
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-[#0a0a0f] flex flex-col overflow-hidden">
-
-      {/* Ambient bg */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <motion.div animate={{ opacity: isRecording ? 0.15 : 0.06 }} transition={{ duration: 1 }}
-          className="absolute top-[-20%] left-[20%] w-[500px] h-[500px] rounded-full"
-          style={{ background: "radial-gradient(circle, #6366f1, transparent 70%)" }} />
-        <motion.div animate={{ opacity: isRecording ? 0.1 : 0.04 }} transition={{ duration: 1 }}
-          className="absolute bottom-[-10%] right-[5%] w-[400px] h-[400px] rounded-full"
-          style={{ background: "radial-gradient(circle, #8b5cf6, transparent 70%)" }} />
-      </div>
+    <div className="min-h-screen min-h-[100dvh] flex flex-col overflow-hidden" style={{ background: "#f5f6e4" }}>
 
       {/* ── Header ── */}
-      <header className="relative z-10 flex items-center justify-between px-4 py-3 border-b border-white/[0.05] flex-shrink-0"
-        style={{ background: "rgba(10,10,15,0.9)", backdropFilter: "blur(20px)" }}>
+      <header className="relative z-10 flex items-center justify-between px-5 py-3.5 flex-shrink-0"
+        style={{ background: "rgba(245,246,228,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
         <div className="flex items-center gap-2 min-w-0">
-          <Link href="/" className="text-white/30 hover:text-white transition-colors p-1 -ml-1">
-            <ArrowLeft size={16} />
+          <Link href="/" className="transition-opacity hover:opacity-60 p-1 -ml-1">
+            <ArrowLeft size={16} className="text-black/50" />
           </Link>
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center flex-shrink-0">
-              <Mic size={12} />
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-[#7c6fcd] flex items-center justify-center flex-shrink-0">
+              <Mic size={12} className="text-white" />
             </div>
-            <span className="text-sm font-semibold tracking-tight hidden xs:block">VoiceFlow</span>
+            <span className="text-sm font-semibold text-black/80 tracking-tight hidden xs:block">VoiceFlow</span>
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
           <button onClick={() => setShowHistory(!showHistory)}
-            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs transition-colors ${
-              showHistory ? "bg-brand-600/30 text-brand-300" : "text-white/35 hover:text-white hover:bg-white/5"
-            }`}>
-            <Clock size={13} />
-            {history.length > 0 && (
-              <span className="text-[10px] bg-brand-500/30 text-brand-300 px-1 py-0.5 rounded-full">{history.length}</span>
-            )}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              showHistory ? "bg-[#7c6fcd]/15 text-[#7c6fcd]" : "text-black/40 hover:text-black hover:bg-black/5"
+            }`}
+            style={{ border: "1.5px solid", borderColor: showHistory ? "rgba(124,111,205,0.3)" : "rgba(0,0,0,0.1)" }}>
+            <Clock size={12} />
+            {history.length > 0 && <span className="text-[10px]">{history.length}</span>}
           </button>
           <button onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-lg text-xs transition-colors ${showSettings ? "bg-white/10 text-white" : "text-white/35 hover:text-white hover:bg-white/5"}`}>
+            className={`p-2 rounded-full transition-colors ${showSettings ? "bg-black/8 text-black" : "text-black/40 hover:text-black hover:bg-black/5"}`}>
             <Settings size={14} />
           </button>
           {!isMobile && (
             <button onClick={() => setCompact(true)}
-              className="p-2 rounded-lg text-white/30 hover:text-white hover:bg-white/5 transition-colors">
+              className="p-2 rounded-full text-black/30 hover:text-black hover:bg-black/5 transition-colors">
               <ChevronDown size={14} />
             </button>
           )}
@@ -431,15 +412,15 @@ export default function AppPage() {
         {showSettings && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="relative z-10 overflow-hidden border-b border-white/[0.05] flex-shrink-0"
-            style={{ background: "rgba(16,16,25,0.97)" }}>
-            <div className="px-4 py-4 space-y-4">
+            className="relative z-10 overflow-hidden flex-shrink-0"
+            style={{ background: "#eeefd8", borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
+            <div className="px-5 py-4 space-y-4">
               <ModeSelector mode={enhanceMode} onChange={setEnhanceMode} />
               <EnhancementSlider value={enhanceLevel} onChange={setEnhanceLevel} />
               {!isMobile && (
-                <p className="text-xs text-white/25 flex items-center gap-1.5">
+                <p className="text-xs text-black/35 flex items-center gap-1.5">
                   <Keyboard size={11} />
-                  Press <kbd>F2</kbd> to toggle recording from anywhere on this page
+                  Press <kbd className="px-1 py-0.5 rounded text-[10px]" style={{ background: "rgba(0,0,0,0.08)", border: "1px solid rgba(0,0,0,0.12)" }}>F2</kbd> to toggle recording
                 </p>
               )}
             </div>
@@ -448,19 +429,19 @@ export default function AppPage() {
       </AnimatePresence>
 
       <div className="flex flex-1 overflow-hidden relative z-10 min-h-0">
-        <main className="flex-1 flex flex-col items-center px-3 py-4 overflow-y-auto">
+        <main className="flex-1 flex flex-col items-center px-4 py-5 overflow-y-auto">
 
-          {/* ── Two-column language selectors ── */}
-          <div className="w-full max-w-2xl grid grid-cols-2 gap-3 mb-5">
+          {/* ── Two-column language selectors — equal width ── */}
+          <div className="w-full max-w-3xl grid grid-cols-2 gap-4 mb-6" style={{ gridTemplateColumns: "1fr 1fr" }}>
 
             {/* Left — Speak In */}
-            <div>
-              <div className="flex items-center justify-between mb-2 px-0.5">
-                <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">Speak In</p>
-                <span className="text-[10px] text-brand-300">{isLang.flag} {isLang.nativeName}</span>
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-2.5 px-1">
+                <p className="text-[11px] font-bold text-black/40 uppercase tracking-widest">Speak In</p>
+                <span className="text-[10px] font-medium text-[#7c6fcd]">{isLang.flag} {isLang.nativeName}</span>
               </div>
-              <div className="rounded-2xl p-2 grid grid-cols-3 sm:grid-cols-4 gap-1.5"
-                style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="flex-1 rounded-2xl p-2.5 grid grid-cols-3 sm:grid-cols-4 gap-1.5"
+                style={{ background: "rgba(255,255,255,0.65)", border: "1.5px solid rgba(0,0,0,0.09)" }}>
                 {LANGUAGES.map((lang) => (
                   <button key={lang.code}
                     onPointerDown={() => {
@@ -469,17 +450,16 @@ export default function AppPage() {
                       toast.success(`${lang.flag} ${lang.nativeName}`, { duration: 900 });
                     }}
                     disabled={isRecording}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all active:scale-95 touch-manipulation ${
-                      language === lang.code
-                        ? "border-brand-500/60 bg-brand-600/25"
-                        : "border-transparent hover:border-white/10 hover:bg-white/5"
-                    }`}
-                    style={{ WebkitTapHighlightColor: "transparent" }}>
+                    className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all active:scale-95 touch-manipulation"
+                    style={{
+                      background: language === lang.code ? "rgba(124,111,205,0.12)" : "transparent",
+                      border: language === lang.code ? "1.5px solid rgba(124,111,205,0.45)" : "1.5px solid transparent",
+                      WebkitTapHighlightColor: "transparent",
+                    }}>
                     <span className="text-lg sm:text-xl leading-none">{lang.flag}</span>
                     <span
-                      className={`text-[8px] sm:text-[9px] leading-tight text-center w-full truncate ${
-                        language === lang.code ? "text-brand-300 font-semibold" : "text-white/35"
-                      }`}
+                      className="text-[8px] sm:text-[9px] leading-tight text-center w-full truncate font-medium"
+                      style={{ color: language === lang.code ? "#7c6fcd" : "rgba(0,0,0,0.4)" }}
                       dir={lang.rtl ? "rtl" : "ltr"}>
                       {lang.nativeName}
                     </span>
@@ -489,24 +469,27 @@ export default function AppPage() {
             </div>
 
             {/* Right — Translate To */}
-            <div>
-              <div className="flex items-center justify-between mb-2 px-0.5">
-                <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">Translate To</p>
-                <span className="text-[10px] text-emerald-400">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-2.5 px-1">
+                <p className="text-[11px] font-bold text-black/40 uppercase tracking-widest">Translate To</p>
+                <span className="text-[10px] font-medium text-emerald-600">
                   {translateTo === "none" ? "Off" : `${rightPanelLang?.flag ?? ""} ${rightPanelLang?.nativeName ?? ""}`}
                 </span>
               </div>
-              <div className="rounded-2xl p-2 grid grid-cols-3 sm:grid-cols-4 gap-1.5"
-                style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="flex-1 rounded-2xl p-2.5 grid grid-cols-3 sm:grid-cols-4 gap-1.5"
+                style={{ background: "rgba(255,255,255,0.65)", border: "1.5px solid rgba(0,0,0,0.09)" }}>
                 {/* None */}
                 <button
                   onPointerDown={() => setTranslateTo("none")}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all active:scale-95 touch-manipulation ${
-                    translateTo === "none" ? "border-white/25 bg-white/8" : "border-transparent hover:border-white/10 hover:bg-white/5"
-                  }`}
-                  style={{ WebkitTapHighlightColor: "transparent" }}>
+                  className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all active:scale-95 touch-manipulation"
+                  style={{
+                    background: translateTo === "none" ? "rgba(0,0,0,0.06)" : "transparent",
+                    border: translateTo === "none" ? "1.5px solid rgba(0,0,0,0.18)" : "1.5px solid transparent",
+                    WebkitTapHighlightColor: "transparent",
+                  }}>
                   <span className="text-lg sm:text-xl leading-none">🚫</span>
-                  <span className={`text-[8px] sm:text-[9px] ${translateTo === "none" ? "text-white/60 font-semibold" : "text-white/30"}`}>None</span>
+                  <span className="text-[8px] sm:text-[9px] font-medium"
+                    style={{ color: translateTo === "none" ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.35)" }}>None</span>
                 </button>
                 {translateLangs.map((lang) => {
                   const gt = GTRANS[lang.code];
@@ -514,15 +497,16 @@ export default function AppPage() {
                   return (
                     <button key={lang.code}
                       onPointerDown={() => setTranslateTo(gt)}
-                      className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all active:scale-95 touch-manipulation ${
-                        sel ? "border-emerald-500/60 bg-emerald-600/20" : "border-transparent hover:border-white/10 hover:bg-white/5"
-                      }`}
-                      style={{ WebkitTapHighlightColor: "transparent" }}>
+                      className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all active:scale-95 touch-manipulation"
+                      style={{
+                        background: sel ? "rgba(5,150,105,0.1)" : "transparent",
+                        border: sel ? "1.5px solid rgba(5,150,105,0.35)" : "1.5px solid transparent",
+                        WebkitTapHighlightColor: "transparent",
+                      }}>
                       <span className="text-lg sm:text-xl leading-none">{lang.flag}</span>
                       <span
-                        className={`text-[8px] sm:text-[9px] leading-tight text-center w-full truncate ${
-                          sel ? "text-emerald-300 font-semibold" : "text-white/35"
-                        }`}
+                        className="text-[8px] sm:text-[9px] leading-tight text-center w-full truncate font-medium"
+                        style={{ color: sel ? "#059669" : "rgba(0,0,0,0.4)" }}
                         dir={lang.rtl ? "rtl" : "ltr"}>
                         {lang.nativeName}
                       </span>
@@ -534,25 +518,26 @@ export default function AppPage() {
           </div>
 
           {/* ── Mic button + status ── */}
-          <div className="flex flex-col items-center mb-5">
+          <div className="flex flex-col items-center mb-6">
             <div className="relative flex items-center justify-center mb-3">
               {isRecording && [1, 2, 3].map((i) => (
-                <motion.div key={i} className="absolute rounded-full border border-brand-500/20"
-                  animate={{ scale: [1, 1.9 + i * 0.3], opacity: [0.35, 0] }}
+                <motion.div key={i} className="absolute rounded-full"
+                  animate={{ scale: [1, 1.9 + i * 0.3], opacity: [0.25, 0] }}
                   transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.4, ease: "easeOut" }}
-                  style={{ width: 80, height: 80 }} />
+                  style={{ width: 76, height: 76, border: "1.5px solid rgba(239,68,68,0.4)" }} />
               ))}
               <motion.button onClick={toggleRecording}
-                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}
                 animate={isRecording
-                  ? { boxShadow: ["0 0 30px rgba(239,68,68,0.4)", "0 0 55px rgba(239,68,68,0.7)", "0 0 30px rgba(239,68,68,0.4)"] }
-                  : { boxShadow: ["0 0 25px rgba(99,102,241,0.3)", "0 0 45px rgba(99,102,241,0.5)", "0 0 25px rgba(99,102,241,0.3)"] }
+                  ? { boxShadow: ["0 4px 24px rgba(239,68,68,0.25)", "0 4px 40px rgba(239,68,68,0.45)", "0 4px 24px rgba(239,68,68,0.25)"] }
+                  : { boxShadow: ["0 4px 24px rgba(124,111,205,0.2)", "0 4px 40px rgba(124,111,205,0.38)", "0 4px 24px rgba(124,111,205,0.2)"] }
                 }
                 transition={{ duration: 2, repeat: Infinity }}
-                className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-colors duration-300 touch-manipulation ${
-                  isRecording ? "bg-red-500" : "bg-brand-600 active:bg-brand-500"
-                }`}
-                style={{ WebkitTapHighlightColor: "transparent" }}>
+                className="relative w-20 h-20 rounded-full flex items-center justify-center touch-manipulation transition-colors duration-300"
+                style={{
+                  background: isRecording ? "#ef4444" : "#7c6fcd",
+                  WebkitTapHighlightColor: "transparent",
+                }}>
                 <AnimatePresence mode="wait">
                   {isRecording
                     ? <motion.div key="stop" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}><MicOff size={28} className="text-white" /></motion.div>
@@ -564,18 +549,18 @@ export default function AppPage() {
 
             <div className="flex items-center gap-2 h-5">
               {isRecording ? (
-                <motion.span className="flex items-center gap-2 text-white/60"
+                <motion.span className="flex items-center gap-2"
                   animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
-                  <span className="text-xs">Listening · tap to stop</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                  <span className="text-xs font-medium text-black/50">Listening · tap to stop</span>
                 </motion.span>
               ) : isEnhancing ? (
-                <span className="flex items-center gap-2 text-brand-400 text-xs">
+                <span className="flex items-center gap-2 text-xs font-medium" style={{ color: "#7c6fcd" }}>
                   <Loader2 size={12} className="animate-spin flex-shrink-0" />
-                  Enhancing...
+                  Enhancing with AI...
                 </span>
               ) : (
-                <span className="text-white/25 text-xs">
+                <span className="text-xs text-black/30 font-medium">
                   {isMobile ? "Tap mic to start" : "Click mic or press F2"}
                 </span>
               )}
@@ -588,53 +573,59 @@ export default function AppPage() {
             )}
           </div>
 
-          {/* ── Two text output panels ── */}
-          <div className="w-full max-w-2xl grid grid-cols-2 gap-3 mb-4">
+          {/* ── Two output text panels — equal width ── */}
+          <div className="w-full max-w-3xl grid grid-cols-2 gap-4 mb-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
 
-            {/* Left — Original speech */}
+            {/* Left — Original */}
             <div className="flex flex-col rounded-2xl overflow-hidden"
-              style={{ background: "rgba(255,255,255,0.03)", border: isRecording ? "1px solid rgba(99,102,241,0.25)" : "1px solid rgba(255,255,255,0.07)" }}>
-              <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-white/[0.05]">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">{isLang.flag}</span>
-                  <span className="text-[10px] font-semibold text-white/40 uppercase tracking-wide truncate max-w-[70px]">{isLang.nativeName}</span>
+              style={{
+                background: "rgba(255,255,255,0.75)",
+                border: isRecording ? "1.5px solid rgba(124,111,205,0.4)" : "1.5px solid rgba(0,0,0,0.09)",
+              }}>
+              <div className="flex items-center justify-between px-4 pt-3 pb-2.5"
+                style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{isLang.flag}</span>
+                  <span className="text-[11px] font-bold text-black/50 uppercase tracking-wide truncate max-w-[80px]">{isLang.nativeName}</span>
                 </div>
-                <span className="text-[9px] text-white/20">Original</span>
+                <span className="text-[10px] text-black/25 font-medium">Original</span>
               </div>
-              <div className="flex-1 px-3 py-2.5 min-h-[90px]">
+              <div className="flex-1 px-4 py-3 min-h-[110px]">
                 {isRecording ? (
-                  <p className="text-white/75 text-sm leading-relaxed"
+                  <p className="text-sm leading-relaxed text-black/70"
                     dir={isLang.rtl ? "rtl" : "ltr"}
                     style={{ fontFamily: isLang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}>
                     {liveText}
                     <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ duration: 0.8, repeat: Infinity }}
-                      className="inline-block w-0.5 h-3.5 bg-brand-400 ml-0.5 align-middle" />
+                      className="inline-block w-0.5 h-3.5 ml-0.5 align-middle rounded-full"
+                      style={{ background: "#7c6fcd" }} />
                   </p>
                 ) : transcript ? (
-                  <p className="text-white/75 text-sm leading-relaxed"
+                  <p className="text-sm leading-relaxed text-black/75"
                     dir={isLang.rtl ? "rtl" : "ltr"}
                     style={{ fontFamily: isLang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}>
                     {transcript}
                   </p>
                 ) : (
-                  <p className="text-white/20 text-xs italic">Your speech appears here...</p>
+                  <p className="text-xs text-black/25 italic">Your speech appears here...</p>
                 )}
               </div>
               {transcript && !isRecording && (
-                <div className="px-3 pb-3 pt-1 flex items-center gap-2">
+                <div className="px-4 pb-3.5 pt-2 flex items-center gap-2"
+                  style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                   <button onClick={copyLeft}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 touch-manipulation"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 touch-manipulation"
                     style={{
-                      background: copiedLeft ? "rgba(16,185,129,0.15)" : "rgba(99,102,241,0.15)",
-                      border: copiedLeft ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(99,102,241,0.25)",
-                      color: copiedLeft ? "#6ee7b7" : "#a5b4fc",
+                      background: copiedLeft ? "rgba(5,150,105,0.1)" : "rgba(124,111,205,0.12)",
+                      border: copiedLeft ? "1.5px solid rgba(5,150,105,0.3)" : "1.5px solid rgba(124,111,205,0.3)",
+                      color: copiedLeft ? "#059669" : "#7c6fcd",
                     }}>
                     {copiedLeft ? <Check size={11} /> : <Copy size={11} />}
                     {copiedLeft ? "Copied!" : "Copy"}
                   </button>
                   <button onClick={clearCurrent}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-white/25 hover:text-red-400 transition-colors touch-manipulation"
-                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation text-black/30 hover:text-red-500"
+                    style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.09)" }}>
                     <Trash2 size={11} /> Clear
                   </button>
                 </div>
@@ -643,58 +634,60 @@ export default function AppPage() {
 
             {/* Right — Translation / Enhanced */}
             <div className="flex flex-col rounded-2xl overflow-hidden"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-white/[0.05]">
-                <div className="flex items-center gap-1.5">
+              style={{ background: "rgba(255,255,255,0.75)", border: "1.5px solid rgba(0,0,0,0.09)" }}>
+              <div className="flex items-center justify-between px-4 pt-3 pb-2.5"
+                style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+                <div className="flex items-center gap-2">
                   {translateTo !== "none" && rightPanelLang ? (
                     <>
-                      <span className="text-sm">{rightPanelLang.flag}</span>
-                      <span className="text-[10px] font-semibold text-emerald-400/80 uppercase tracking-wide truncate max-w-[70px]">{rightPanelLang.nativeName}</span>
+                      <span className="text-base">{rightPanelLang.flag}</span>
+                      <span className="text-[11px] font-bold uppercase tracking-wide truncate max-w-[80px]" style={{ color: "#059669" }}>{rightPanelLang.nativeName}</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles size={10} className="text-brand-400" />
-                      <span className="text-[10px] font-semibold text-white/40 uppercase tracking-wide">Enhanced</span>
+                      <Sparkles size={12} style={{ color: "#7c6fcd" }} />
+                      <span className="text-[11px] font-bold text-black/50 uppercase tracking-wide">Enhanced</span>
                     </>
                   )}
                 </div>
-                <span className="text-[9px] text-white/20">
+                <span className="text-[10px] text-black/25 font-medium">
                   {translateTo !== "none" ? "Translation" : "AI Output"}
                 </span>
               </div>
-              <div className="flex-1 px-3 py-2.5 min-h-[90px]">
+              <div className="flex-1 px-4 py-3 min-h-[110px]">
                 {isEnhancing ? (
-                  <div className="flex items-center gap-2 text-brand-400 text-xs">
-                    <Loader2 size={11} className="animate-spin" /> Processing...
+                  <div className="flex items-center gap-2 text-xs font-medium" style={{ color: "#7c6fcd" }}>
+                    <Loader2 size={12} className="animate-spin" /> Processing...
                   </div>
                 ) : rightPanelText ? (
-                  <p className="text-white/75 text-sm leading-relaxed"
+                  <p className="text-sm leading-relaxed text-black/75"
                     dir={rightPanelLang?.rtl ? "rtl" : "ltr"}
                     style={{ fontFamily: rightPanelLang?.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}>
                     {rightPanelText}
                   </p>
                 ) : (
-                  <p className="text-white/20 text-xs italic">
+                  <p className="text-xs text-black/25 italic">
                     {translateTo !== "none" ? "Translation appears here..." : "Enhanced text appears here..."}
                   </p>
                 )}
               </div>
               {rightPanelText && !isRecording && !isEnhancing && (
-                <div className="px-3 pb-3 pt-1 flex items-center gap-2">
+                <div className="px-4 pb-3.5 pt-2 flex items-center gap-2"
+                  style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                   <button onClick={copyRight}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 touch-manipulation"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 touch-manipulation"
                     style={{
-                      background: copiedRight ? "rgba(16,185,129,0.15)" : "rgba(16,185,129,0.12)",
-                      border: copiedRight ? "1px solid rgba(16,185,129,0.35)" : "1px solid rgba(16,185,129,0.2)",
-                      color: copiedRight ? "#6ee7b7" : "#a7f3d0",
+                      background: copiedRight ? "rgba(5,150,105,0.15)" : "rgba(5,150,105,0.1)",
+                      border: copiedRight ? "1.5px solid rgba(5,150,105,0.4)" : "1.5px solid rgba(5,150,105,0.25)",
+                      color: "#059669",
                     }}>
                     {copiedRight ? <Check size={11} /> : <Copy size={11} />}
                     {copiedRight ? "Copied!" : "Copy"}
                   </button>
                   {transcript && (
                     <button onClick={handleReEnhance} disabled={isEnhancing}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-white/30 hover:text-white/60 transition-colors disabled:opacity-30 touch-manipulation"
-                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors disabled:opacity-40 touch-manipulation text-black/35 hover:text-black/60"
+                      style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.09)" }}>
                       <Wand2 size={11} /> Enhance
                     </button>
                   )}
@@ -716,21 +709,24 @@ export default function AppPage() {
       {/* Floating F2 badge — desktop only */}
       {!isMobile && (
         <motion.button onClick={toggleRecording}
-          whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
-          className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-2xl select-none"
+          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+          className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full select-none"
           style={{
-            background: isRecording ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.12)",
-            border: isRecording ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(99,102,241,0.25)",
+            background: isRecording ? "rgba(239,68,68,0.1)" : "rgba(124,111,205,0.12)",
+            border: isRecording ? "1.5px solid rgba(239,68,68,0.3)" : "1.5px solid rgba(124,111,205,0.3)",
             backdropFilter: "blur(12px)",
-            boxShadow: isRecording ? "0 0 20px rgba(239,68,68,0.2)" : "0 0 20px rgba(99,102,241,0.15)",
           }}>
-          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRecording ? "bg-red-400 animate-pulse" : "bg-brand-400"}`} />
-          <span className="text-xs text-white/60 font-medium">{isRecording ? "Recording..." : "Press"}</span>
-          <kbd className="text-xs font-bold px-1.5 py-0.5 rounded-md"
-            style={{ background: "rgba(255,255,255,0.1)", color: isRecording ? "#f87171" : "#a5b4fc", border: "1px solid rgba(255,255,255,0.12)" }}>
-            F2
-          </kbd>
-          {!isRecording && <span className="text-xs text-white/40">to start</span>}
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRecording ? "bg-red-500 animate-pulse" : ""}`}
+            style={{ background: isRecording ? undefined : "#7c6fcd" }} />
+          <span className="text-xs font-semibold" style={{ color: isRecording ? "#ef4444" : "#7c6fcd" }}>
+            {isRecording ? "Recording..." : "Press"}
+          </span>
+          {!isRecording && (
+            <kbd className="text-xs font-bold px-1.5 py-0.5 rounded-md"
+              style={{ background: "rgba(124,111,205,0.15)", color: "#7c6fcd", border: "1px solid rgba(124,111,205,0.25)" }}>
+              F2
+            </kbd>
+          )}
         </motion.button>
       )}
     </div>
