@@ -139,7 +139,7 @@
       <div id="vf-hud-dot"></div>
       <div id="vf-hud-text">Listening...</div>
     </div>
-    <div id="vf-hud-hint">Press <strong>S S</strong> again to stop &amp; insert</div>
+    <div id="vf-hud-hint">Press <strong>Ctrl+9</strong> or <strong>S&thinsp;S</strong> again to stop &amp; insert</div>
   `;
 
   // Panel
@@ -184,7 +184,7 @@
 
   const statusEl = document.createElement('div');
   statusEl.id = 'vf-status';
-  statusEl.textContent = 'Press S S anywhere to start';
+  statusEl.textContent = 'Press Ctrl+9 or S S anywhere to start';
 
   const textbox = document.createElement('div');
   textbox.id = 'vf-textbox';
@@ -216,7 +216,7 @@
   const fab = document.createElement('button');
   fab.id = 'vf-fab';
   fab.className = 'idle';
-  fab.title = 'VoiceFlow AI — click or press SS';
+  fab.title = 'VoiceFlow AI — click, press Ctrl+9, or press SS';
   fab.innerHTML = micSVG(24);
   fab.onclick = () => {
     if (isRecording) {
@@ -232,7 +232,7 @@
   // Shortcut tip
   const tip = document.createElement('div');
   tip.id = 'vf-shortcut-tip';
-  tip.textContent = 'S+S';
+  tip.textContent = 'Ctrl+9';
 
   root.append(hud, panel, tip, fab);
   document.body.appendChild(root);
@@ -248,6 +248,38 @@
     }
   }, true);
 
+  /* ── Shared toggle logic ─────────────────────────────────── */
+  function triggerToggle(targetOverride) {
+    if (isRecording) { stopRec(); return; }
+
+    const active = targetOverride || document.activeElement;
+    const isField = active && !root.contains(active) && (
+      active.tagName === 'INPUT' ||
+      active.tagName === 'TEXTAREA' ||
+      active.isContentEditable
+    );
+
+    if (isField) {
+      inlineTarget = active;
+      inlineMode   = true;
+      startRec();
+    } else {
+      inlineTarget = null;
+      inlineMode   = false;
+      openPanel();
+      startRec();
+    }
+  }
+
+  /* ── Ctrl+9 shortcut — works everywhere, types nothing ───── */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '9' && (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      triggerToggle();
+    }
+  }, true);
+
   /* ── SS shortcut — CAPTURE phase so it fires inside fields ── */
   document.addEventListener('keydown', (e) => {
     // Only plain S key, no modifiers
@@ -258,34 +290,21 @@
     if (now - lastS < 500) {
       // ✅ SS detected!
       e.preventDefault();
-      e.stopPropagation(); // prevent 2nd 's' from reaching the field
+      e.stopImmediatePropagation(); // stop ALL other listeners including same-phase
 
-      if (isRecording) {
-        stopRec();
-      } else {
-        const active = document.activeElement;
-        const isField = active && !root.contains(active) && (
-          active.tagName === 'INPUT' ||
-          active.tagName === 'TEXTAREA' ||
-          active.isContentEditable
-        );
+      const active = document.activeElement;
+      const isField = active && !root.contains(active) && (
+        active.tagName === 'INPUT' ||
+        active.tagName === 'TEXTAREA' ||
+        active.isContentEditable
+      );
 
-        if (isField) {
-          // Inline mode: recording will inject directly into this field
-          inlineTarget = active;
-          inlineMode   = true;
-          // Remove the first 's' that was already typed into the field
-          removeTypedS(active);
-          startRec();
-        } else {
-          // Panel mode: record into the panel, then manually insert
-          inlineTarget = null;
-          inlineMode   = false;
-          openPanel();
-          startRec();
-        }
+      if (!isRecording && isField) {
+        // Remove the first 's' that was already typed into the field
+        removeTypedS(active);
       }
 
+      triggerToggle(isField ? active : null);
       lastS = 0;
     } else {
       lastS = now;

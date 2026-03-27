@@ -110,7 +110,7 @@ export function LanguageSelector({ value, onChange }: Props) {
                   {filtered.map((lang) => (
                     <button
                       key={lang.code}
-                      onClick={() => handleSelect(lang.code)}
+                      onPointerDown={(e) => { e.preventDefault(); handleSelect(lang.code); }}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors text-left ${
                         lang.code === value ? "bg-brand-600/20 text-brand-300" : "text-white/70 hover:bg-white/5"
                       }`}
