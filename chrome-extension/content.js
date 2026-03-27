@@ -48,22 +48,53 @@
   let lastFocused   = null;     // last focused text element (tracked by focusin)
   let inlineTarget  = null;     // field we are injecting into (inline mode)
   let inlineMode    = false;    // true = SS from inside a text field
+  let translateTo   = 'none';   // target language code for translation
   let waveTick      = null;
+
+  /* ── Translation target languages ───────────────────────── */
+  const TRANSLATE_LANGS = [
+    { code:'none',  flag:'🚫', name:'No translation' },
+    { code:'en',    flag:'🇺🇸', name:'English'    },
+    { code:'ur',    flag:'🇵🇰', name:'اردو'        },
+    { code:'ar',    flag:'🇸🇦', name:'العربية'     },
+    { code:'hi',    flag:'🇮🇳', name:'हिन्दी'      },
+    { code:'es',    flag:'🇪🇸', name:'Español'    },
+    { code:'fr',    flag:'🇫🇷', name:'Français'   },
+    { code:'de',    flag:'🇩🇪', name:'Deutsch'    },
+    { code:'zh-CN', flag:'🇨🇳', name:'中文'         },
+    { code:'ja',    flag:'🇯🇵', name:'日本語'       },
+    { code:'ko',    flag:'🇰🇷', name:'한국어'       },
+    { code:'ru',    flag:'🇷🇺', name:'Русский'    },
+    { code:'tr',    flag:'🇹🇷', name:'Türkçe'     },
+    { code:'pt',    flag:'🇧🇷', name:'Português'  },
+    { code:'it',    flag:'🇮🇹', name:'Italiano'   },
+  ];
+
+  /* Map speech recognition lang codes → Google Translate codes */
+  const GTRANS = {
+    'en-US':'en','en-GB':'en','ur-PK':'ur','ar-SA':'ar','hi-IN':'hi',
+    'es-ES':'es','fr-FR':'fr','de-DE':'de','pt-BR':'pt','it-IT':'it',
+    'zh-CN':'zh-CN','ja-JP':'ja','ko-KR':'ko','ru-RU':'ru','tr-TR':'tr',
+    'fa-IR':'fa','bn-BD':'bn','id-ID':'id','ms-MY':'ms','vi-VN':'vi',
+    'th-TH':'th','pl-PL':'pl','nl-NL':'nl','sv-SE':'sv','uk-UA':'uk',
+  };
 
   // Check if extension context is still valid
   function chromeOk() {
     try { return typeof chrome !== 'undefined' && !!chrome.runtime?.id; } catch { return false; }
   }
 
-  // Load saved language
+  // Load saved language + translate preference
   try {
     if (chromeOk() && chrome.storage) {
-      chrome.storage.local.get('vf_lang', (d) => {
+      chrome.storage.local.get(['vf_lang','vf_translate'], (d) => {
         if (!chromeOk()) return;
-        if (d.vf_lang) { currentLang = d.vf_lang; refreshLangUI(); }
+        if (d.vf_lang)      { currentLang = d.vf_lang;      refreshLangUI(); }
+        if (d.vf_translate) { translateTo  = d.vf_translate; refreshTranslateUI(); }
       });
     } else {
-      currentLang = localStorage.getItem('vf_lang') || 'en-US';
+      currentLang = localStorage.getItem('vf_lang')      || 'en-US';
+      translateTo  = localStorage.getItem('vf_translate') || 'none';
     }
   } catch { currentLang = 'en-US'; }
 
@@ -72,6 +103,14 @@
     try {
       if (chromeOk() && chrome.storage) chrome.storage.local.set({ vf_lang: code });
       else localStorage.setItem('vf_lang', code);
+    } catch {}
+  }
+
+  function saveTranslate(code) {
+    translateTo = code;
+    try {
+      if (chromeOk() && chrome.storage) chrome.storage.local.set({ vf_translate: code });
+      else localStorage.setItem('vf_translate', code);
     } catch {}
   }
 
@@ -114,6 +153,15 @@
     #vf-lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px;max-height:170px;overflow-y:auto;}
     #vf-lang-grid button{display:flex;align-items:center;gap:7px;padding:7px 9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:8px;color:rgba(255,255,255,.65);font-size:11px;cursor:pointer;transition:all .13s;}
     #vf-lang-grid button:hover,#vf-lang-grid button.vf-sel{background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.38);color:#a5b8fc;}
+
+    /* Translate row */
+    #vf-trans-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06);}
+    #vf-trans-label{font-size:11px;color:rgba(255,255,255,.3);}
+    #vf-trans-btn{background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.25);border-radius:8px;color:#a5b8fc;font-size:12px;font-weight:600;padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;}
+    #vf-trans-btn:hover{background:rgba(99,102,241,.28);}
+    #vf-trans-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px;max-height:170px;overflow-y:auto;}
+    #vf-trans-grid button{display:flex;align-items:center;gap:7px;padding:7px 9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:8px;color:rgba(255,255,255,.65);font-size:11px;cursor:pointer;transition:all .13s;}
+    #vf-trans-grid button:hover,#vf-trans-grid button.vf-sel{background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.38);color:#a5b8fc;}
 
     /* Waveform */
     #vf-wave{display:none;align-items:center;gap:2px;height:22px;margin-bottom:8px;justify-content:center;}
@@ -188,6 +236,27 @@
   langBtn.onclick = () => {
     const open = langGrid.style.display === 'none';
     langGrid.style.display = open ? 'grid' : 'none';
+    transGrid.style.display = 'none';
+  };
+
+  // Translate-to row
+  const transRow = document.createElement('div');
+  transRow.id = 'vf-trans-row';
+  const transLabel = document.createElement('span');
+  transLabel.id = 'vf-trans-label';
+  transLabel.textContent = 'Translate to:';
+  const transBtn = document.createElement('button');
+  transBtn.id = 'vf-trans-btn';
+  transRow.append(transLabel, transBtn);
+
+  const transGrid = document.createElement('div');
+  transGrid.id = 'vf-trans-grid';
+  transGrid.style.display = 'none';
+  buildTransGrid();
+  transBtn.onclick = () => {
+    const open = transGrid.style.display === 'none';
+    transGrid.style.display = open ? 'grid' : 'none';
+    langGrid.style.display = 'none';
   };
 
   const wave = document.createElement('div');
@@ -222,7 +291,7 @@
   clearBtn.onclick = doClear;
 
   actionsEl.append(insertBtn, copyBtn, clearBtn);
-  panel.append(panelHeader, langRow, langGrid, wave, statusEl, textbox, actionsEl);
+  panel.append(panelHeader, langRow, langGrid, transRow, transGrid, wave, statusEl, textbox, actionsEl);
 
   // FAB
   const fab = document.createElement('button');
@@ -249,6 +318,7 @@
   root.append(hud, panel, tip, fab);
   document.body.appendChild(root);
   refreshLangUI();
+  refreshTranslateUI();
 
   /* ── Track the last focused text element ─────────────────── */
   document.addEventListener('focusin', (e) => {
@@ -382,34 +452,38 @@
     try { recognition.stop(); } catch { finish(); }
   }
 
-  function finalizeAndInject() {
-    // Use accumulated finals + last interim as fallback (fixes Arabic/Urdu/etc.)
-    const text = (accumulated + lastInterim).trim();
-    accumulated  = '';
-    lastInterim  = '';
-    recognition  = null;
+  async function finalizeAndInject() {
+    const raw = (accumulated + lastInterim).trim();
+    accumulated = '';
+    lastInterim = '';
+    recognition = null;
+
+    if (!raw) {
+      if (inlineMode) flashHud('Nothing recorded');
+      else setStatus('Nothing recorded — try again');
+      return;
+    }
+
+    // Translate if a target language is selected
+    let text = raw;
+    if (translateTo && translateTo !== 'none') {
+      if (inlineMode) setHudText('Translating…');
+      else setStatus('Translating…');
+      text = await translateText(raw, currentLang, translateTo);
+    }
 
     if (inlineMode && inlineTarget) {
       hud.style.display = 'none';
-      if (text) {
-        const ok = injectInto(inlineTarget, text);
-        if (ok) {
-          flashHud('✅ Inserted!');
-        } else {
-          navigator.clipboard.writeText(text).catch(() => {});
-          flashHud('📋 Copied — press Ctrl+V to paste');
-        }
-      } else {
-        flashHud('Nothing recorded');
+      const ok = injectInto(inlineTarget, text);
+      if (ok) flashHud('✅ Inserted!');
+      else {
+        navigator.clipboard.writeText(text).catch(() => {});
+        flashHud('📋 Copied — press Ctrl+V to paste');
       }
     } else {
-      if (text) {
-        showInPanel(text);
-        setStatus('✅ Done — click "Insert at cursor" or Copy');
-        actionsEl.style.display = 'flex';
-      } else {
-        setStatus('Nothing recorded — try again');
-      }
+      showInPanel(text);
+      setStatus('✅ Done — click "Insert at cursor" or Copy');
+      actionsEl.style.display = 'flex';
     }
   }
 
@@ -564,6 +638,43 @@
       langGrid.appendChild(btn);
     });
   }
+
+  /* ── Translate UI ────────────────────────────────────────── */
+  function refreshTranslateUI() {
+    const t = TRANSLATE_LANGS.find(l => l.code === translateTo) || TRANSLATE_LANGS[0];
+    transBtn.innerHTML = `<span>${t.flag}</span><span>${t.name}</span><span style="color:rgba(255,255,255,.3);margin-left:3px">▾</span>`;
+  }
+
+  function buildTransGrid() {
+    transGrid.innerHTML = '';
+    TRANSLATE_LANGS.forEach(lang => {
+      const btn = document.createElement('button');
+      btn.className = lang.code === translateTo ? 'vf-sel' : '';
+      btn.innerHTML = `<span style="font-size:15px">${lang.flag}</span><span>${lang.name}</span>`;
+      btn.onclick = () => {
+        saveTranslate(lang.code);
+        refreshTranslateUI();
+        buildTransGrid();
+        transGrid.style.display = 'none';
+        setStatus(lang.code === 'none' ? 'Translation off' : `Translate → ${lang.name}`);
+      };
+      transGrid.appendChild(btn);
+    });
+  }
+
+  /* ── Google Translate (free, no key needed) ──────────────── */
+  async function translateText(text, fromCode, toCode) {
+    if (!toCode || toCode === 'none') return text;
+    const from = GTRANS[fromCode] || 'auto';
+    if (from === toCode) return text;
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${toCode}&dt=t&q=${encodeURIComponent(text)}`;
+      const res  = await fetch(url);
+      const data = await res.json();
+      return data[0].map(c => c[0]).join('');
+    } catch { return text; }
+  }
+
 
   /* ── Mic blocked tip ─────────────────────────────────────── */
   function showBrowserMicTip() {
