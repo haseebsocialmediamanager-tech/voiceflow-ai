@@ -6,7 +6,9 @@
  * at your cursor the moment you stop. No copy-paste needed.
  */
 (function () {
-  if (document.getElementById('vf-root')) return;
+  // Remove any previous instance (e.g. after extension reload without tab reload)
+  const _old = document.getElementById('vf-root');
+  if (_old) _old.remove();
 
   /* ── Languages ───────────────────────────────────────────── */
   const LANGS = [
