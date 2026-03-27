@@ -48,19 +48,29 @@
   let inlineMode    = false;    // true = SS from inside a text field
   let waveTick      = null;
 
-  // Load saved language
-  if (typeof chrome !== 'undefined' && chrome.storage) {
-    chrome.storage.local.get('vf_lang', (d) => {
-      if (d.vf_lang) { currentLang = d.vf_lang; refreshLangUI(); }
-    });
-  } else {
-    currentLang = localStorage.getItem('vf_lang') || 'en-US';
+  // Check if extension context is still valid
+  function chromeOk() {
+    try { return typeof chrome !== 'undefined' && !!chrome.runtime?.id; } catch { return false; }
   }
+
+  // Load saved language
+  try {
+    if (chromeOk() && chrome.storage) {
+      chrome.storage.local.get('vf_lang', (d) => {
+        if (!chromeOk()) return;
+        if (d.vf_lang) { currentLang = d.vf_lang; refreshLangUI(); }
+      });
+    } else {
+      currentLang = localStorage.getItem('vf_lang') || 'en-US';
+    }
+  } catch { currentLang = 'en-US'; }
 
   function saveLang(code) {
     currentLang = code;
-    if (typeof chrome !== 'undefined' && chrome.storage) chrome.storage.local.set({ vf_lang: code });
-    else localStorage.setItem('vf_lang', code);
+    try {
+      if (chromeOk() && chrome.storage) chrome.storage.local.set({ vf_lang: code });
+      else localStorage.setItem('vf_lang', code);
+    } catch {}
   }
 
   /* ── Styles ───────────────────────────────────────────────── */
