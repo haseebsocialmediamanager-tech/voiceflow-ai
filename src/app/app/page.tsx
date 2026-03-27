@@ -93,10 +93,26 @@ export default function AppPage() {
     r.onerror = (event: any) => {
       if (event.error === "not-allowed") {
         toast.error("Microphone blocked. Allow it in browser settings.");
+      } else if (event.error === "service-not-allowed") {
+        // iOS Safari: language not enabled for dictation on this device
+        const lang = getLang(languageRef.current);
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isIOS) {
+          toast.error(
+            `${lang.flag} ${lang.nativeName} not enabled on this iPhone.\n\nGo to: Settings → General → Keyboard → Enable Dictation, then add ${lang.nativeName} as a keyboard language.`,
+            { duration: 8000, style: { fontSize: "12px", maxWidth: "320px", whiteSpace: "pre-line" } }
+          );
+        } else {
+          toast.error(`${lang.flag} ${lang.nativeName} not available. Try Chrome on Android or desktop.`, { duration: 5000 });
+        }
+        setRecording(false);
+        if (recognitionRef.current) recognitionRef.current._shouldRestart = false;
       } else if (event.error === "language-not-supported") {
-        toast.error(`${isLang.nativeName} not supported in this browser. Try Chrome.`);
+        toast.error(`${getLang(languageRef.current).nativeName} not supported. Try Chrome on desktop.`, { duration: 5000 });
+        setRecording(false);
+        if (recognitionRef.current) recognitionRef.current._shouldRestart = false;
       } else if (event.error !== "no-speech" && event.error !== "aborted") {
-        toast.error(`Error: ${event.error}`);
+        toast.error(`Recording error: ${event.error}`);
       }
     };
 
@@ -109,7 +125,7 @@ export default function AppPage() {
 
     return r;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setTranscript]);
+  }, [setTranscript, setRecording]);
 
   // Rebuild recognition whenever language changes
   useEffect(() => {
@@ -465,7 +481,15 @@ export default function AppPage() {
                     key={lang.code}
                     onPointerDown={() => {
                       setLanguage(lang.code);
-                      toast.success(`${lang.flag} ${lang.nativeName}`, { duration: 1200 });
+                      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                      if (isIOS && lang.code !== "en-US" && lang.code !== "en-GB") {
+                        toast(`${lang.flag} ${lang.nativeName} selected.\nIf it fails, add this language in iPhone Settings → General → Language & Region`, {
+                          icon: "ℹ️", duration: 4000,
+                          style: { fontSize: "11px", maxWidth: "300px", whiteSpace: "pre-line" },
+                        });
+                      } else {
+                        toast.success(`${lang.flag} ${lang.nativeName}`, { duration: 1200 });
+                      }
                       if (isRecording) stopRecording();
                     }}
                     disabled={isRecording}
