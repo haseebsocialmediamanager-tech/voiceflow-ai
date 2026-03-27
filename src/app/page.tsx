@@ -6,10 +6,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Mic, Shield, Zap, Brain, Code2, Globe, Check, ArrowRight,
-  Sliders, History, WifiOff, Languages, Pause, Star, X, ChevronDown,
+  History, WifiOff, Languages, Pause, Star, X, ChevronDown,
 } from "lucide-react";
 import { AnimatedHero } from "@/components/AnimatedHero";
 import { FlowForSection } from "@/components/FlowForSection";
+import { WorksEverywhereSection } from "@/components/WorksEverywhereSection";
+import { VoiceTransformSection } from "@/components/VoiceTransformSection";
 import { LANGUAGES } from "@/lib/languages";
 
 /* ─── Data ──────────────────────────────────────────────────── */
@@ -240,10 +242,16 @@ export default function LandingPage() {
         <AnimatedHero />
       </div>
 
+      {/* Works Everywhere — app icons wave + phone chat */}
+      <WorksEverywhereSection />
+
       {/* "Flow For" personas loop */}
       <div id="flow-for">
         <FlowForSection />
       </div>
+
+      {/* Voice Transform — endless text loop */}
+      <VoiceTransformSection />
 
       {/* Features */}
       <section id="features" className="relative z-10 px-4 sm:px-6 py-16 sm:py-24 max-w-7xl mx-auto">

@@ -188,6 +188,26 @@ kbd {
   animation-play-state: paused;
 }
 
+/* Reverse marquee (right direction) */
+@keyframes marquee-reverse {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.animate-marquee-reverse {
+  animation: marquee-reverse 28s linear infinite;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* App icon wave scroll */
+@keyframes scroll-wave {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-wave-slow  { animation: scroll-wave 40s linear infinite; }
+.animate-wave-fast  { animation: scroll-wave 28s linear infinite; }
+
 /* Mobile text centering utility */
 @media (max-width: 640px) {
   .mobile-center {
