@@ -281,17 +281,9 @@
     }
   }
 
-  /* ── Keyboard shortcuts — on window (fires before document) ─ */
+  /* ── F1 — start / stop recording ────────────────────────── */
   window.addEventListener('keydown', (e) => {
-    // Ctrl+9 — backup shortcut
-    if (e.key === '9' && (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      triggerToggle();
-      return;
-    }
-    // Spacebar — start / stop
-    if (e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+    if (e.key === 'F1') {
       e.preventDefault();
       e.stopImmediatePropagation();
       triggerToggle();
