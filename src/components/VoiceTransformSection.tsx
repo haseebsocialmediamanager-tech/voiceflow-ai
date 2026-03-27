@@ -4,55 +4,53 @@ import { motion } from "framer-motion";
 import { Mic } from "lucide-react";
 import Link from "next/link";
 
-/* ── Long raw speech (messy, like the user actually speaks) ─── */
+/* ── Raw speech (long sentence, spins on circle) ─────────────── */
 const RAW_LONG =
   "Umm so basically what I wanted to say is... the deadline thing is kinda ugh you know? I told the team it should be ready by Friday although it's probably gonna slip again. There's been so much back and forth and like nobody really knows what's going on. Can you check if Sarah sent out the notes from yesterday's meeting? I think she mentioned it but I'm kinda lost. Also the client invoice — uh I forgot to send it and now they're upset but like honestly the product is really good so...   ·   ";
 
-/* ── Same content, AI-polished ──────────────────────────────── */
-const CLEAN_LONG =
-  "I wanted to flag that the Friday deadline may slip due to ongoing back-and-forth. Could you confirm whether Sarah distributed the meeting notes? The client invoice was inadvertently omitted — my apologies for the oversight. Despite these delays, I remain confident in our product quality and our team's ability to deliver.   ·   ";
+/* ── Short clean phrases flow along the diagonal ribbon ────────── */
+const RIBBON_TEXT =
+  "Confirmed  ·  Understood  ·  On it  ·  Certainly  ·  I'll proceed  ·  Noted  ·  Thank you  ·  Acknowledged  ·  I recommend  ·  With pleasure  ·  As requested  ·  Absolutely  ·  Great point  ·  Proceeding  ·  My pleasure  ·  ";
 
-/* Band path: gentle arc across 1200 units */
-const BAND_PATH = "M0,45 C300,18 900,72 1200,45";
+/* ── Diagonal path: sweeps from bottom-left to upper-right ────── */
+/* viewBox: 0 0 1200 140  — path starts low-left, ends high-right  */
+const DIAG_PATH = "M-30,128 C280,90 720,38 1230,10";
 
-/* ── Section ────────────────────────────────────────────────── */
+/* ── Section ─────────────────────────────────────────────────── */
 export function VoiceTransformSection() {
   return (
     <section
       className="relative overflow-hidden"
-      style={{ background: "#08080f", minHeight: 580 }}
+      style={{ background: "#08080f", minHeight: 560 }}
     >
       {/* Ambient glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 60% 50% at 55% 50%, rgba(99,102,241,0.07) 0%, transparent 70%)",
+            "radial-gradient(ellipse 60% 50% at 58% 46%, rgba(99,102,241,0.07) 0%, transparent 70%)",
         }}
       />
 
-      {/* ── Spinning circle (raw speech) ── left, partially offscreen */}
+      {/* ── Spinning circle — raw messy speech, left side ── */}
       <div
         className="absolute pointer-events-none"
-        style={{ top: -60, left: -170, width: 480, height: 480, zIndex: 1 }}
+        style={{ top: -55, left: -175, width: 490, height: 490, zIndex: 1 }}
       >
-        <svg width="480" height="480" viewBox="0 0 480 480">
+        <svg width="490" height="490" viewBox="0 0 490 490">
           <defs>
-            <path
-              id="vf-circle-path"
-              d="M240,28 A212,212 0 1,1 239.999,28 Z"
-            />
+            <path id="vf-circle-path" d="M245,28 A217,217 0 1,1 244.999,28 Z" />
           </defs>
           <motion.g
             animate={{ rotate: 360 }}
-            transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
-            style={{ transformOrigin: "240px 240px" }}
+            transition={{ duration: 34, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: "245px 245px" }}
           >
             <text
-              fontSize="15"
+              fontSize="15.5"
               fontFamily="Inter, system-ui, sans-serif"
               fill="rgba(255,255,255,0.28)"
-              letterSpacing="1"
+              letterSpacing="0.8"
             >
               <textPath href="#vf-circle-path">
                 {RAW_LONG + RAW_LONG}
@@ -62,12 +60,12 @@ export function VoiceTransformSection() {
         </svg>
       </div>
 
-      {/* ── Heading ── */}
+      {/* ── Heading + CTA ── */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="relative z-10 text-center px-4 pt-20 sm:pt-28 pb-20 sm:pb-28"
+        className="relative z-10 text-center px-4 pt-20 sm:pt-28 pb-24 sm:pb-32"
       >
         <div
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs text-white/40 mb-6"
@@ -115,9 +113,13 @@ export function VoiceTransformSection() {
         </p>
       </motion.div>
 
-      {/* ── Bottom band: clean polished text flows as ribbon ── */}
-      <div className="relative z-10 w-full" style={{ marginBottom: -4 }}>
+      {/* ── Diagonal ribbon — short clean phrases ── */}
+      <div
+        className="absolute left-0 right-0 pointer-events-none"
+        style={{ bottom: 0, zIndex: 10 }}
+      >
         <div className="overflow-hidden w-full">
+          {/* Two SVGs side-by-side, animate-marquee-reverse scrolls them */}
           <div
             className="animate-marquee-reverse flex"
             style={{ width: "max-content" }}
@@ -125,36 +127,36 @@ export function VoiceTransformSection() {
             {[0, 1].map((idx) => (
               <svg
                 key={idx}
-                viewBox="0 0 1200 90"
+                viewBox="0 0 1200 140"
                 style={{
                   width: "100vw",
                   minWidth: "100vw",
-                  height: "90px",
+                  height: "140px",
                   display: "block",
                 }}
-                preserveAspectRatio="xMidYMid meet"
+                preserveAspectRatio="none"
               >
                 <defs>
-                  <path id={`vf-band-${idx}`} d={BAND_PATH} />
+                  <path id={`vf-diag-${idx}`} d={DIAG_PATH} />
                 </defs>
-                {/* Solid ribbon background */}
+                {/* Thick ribbon stroke */}
                 <use
-                  href={`#vf-band-${idx}`}
-                  stroke="rgba(255,255,255,0.94)"
-                  strokeWidth="72"
+                  href={`#vf-diag-${idx}`}
+                  stroke="rgba(255,255,255,0.95)"
+                  strokeWidth="68"
                   fill="none"
                   strokeLinecap="butt"
                 />
-                {/* Clean text on ribbon */}
+                {/* Short phrases on ribbon */}
                 <text
-                  fontSize="19"
+                  fontSize="20"
                   fontFamily="Inter, system-ui, sans-serif"
-                  fontWeight="600"
-                  fill="#08080f"
-                  letterSpacing="0.3"
+                  fontWeight="700"
+                  fill="#0a0a14"
+                  letterSpacing="0.5"
                 >
-                  <textPath href={`#vf-band-${idx}`} startOffset="4%">
-                    {CLEAN_LONG}
+                  <textPath href={`#vf-diag-${idx}`} startOffset="2%">
+                    {RIBBON_TEXT}
                   </textPath>
                 </text>
               </svg>
