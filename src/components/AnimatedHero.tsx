@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic } from "lucide-react";
 
@@ -26,6 +26,8 @@ const LANGUAGES_TICKER = [
   { text: "Привет, мир!", lang: "Russian", rtl: false },
   { text: "فارسی سلام!", lang: "Persian", rtl: true },
 ];
+
+const FLAGS = ["🇺🇸","🇵🇰","🇸🇦","🇮🇳","🇪🇸","🇫🇷","🇩🇪","🇨🇳","🇯🇵","🇰🇷","🇷🇺","🇮🇷","🇧🇩","🇧🇷","🇹🇷","🇮🇩"];
 
 export function AnimatedHero() {
   const [wordIndex, setWordIndex] = useState(0);
@@ -58,7 +60,7 @@ export function AnimatedHero() {
         }} />
 
       {/* Content — full width with max-w, centered */}
-      <div className="relative z-10 text-center w-full max-w-2xl mx-auto">
+      <div className="relative z-10 text-center w-full max-w-2xl mx-auto pb-6 sm:pb-16">
 
         {/* Badge */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -99,7 +101,7 @@ export function AnimatedHero() {
           </div>
         </motion.div>
 
-        {/* Subtitle — properly wrapped on mobile */}
+        {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
           className="text-sm sm:text-base md:text-lg text-white/45 mx-auto mb-8 leading-relaxed px-2"
@@ -134,8 +136,8 @@ export function AnimatedHero() {
 
         {/* CTAs — stacked on mobile */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8 px-4">
-          <a href="/app"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8 px-2">
+          <a href="/signup"
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-2xl bg-brand-600 font-semibold text-base transition-all touch-manipulation"
             style={{ boxShadow: "0 0 30px rgba(99,102,241,0.4)", WebkitTapHighlightColor: "transparent" }}>
             <Mic size={18} />
@@ -150,36 +152,33 @@ export function AnimatedHero() {
 
         {/* Social proof */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
-          className="flex items-center justify-center gap-4 text-xs text-white/25 flex-wrap px-4">
-          <span className="flex items-center gap-1"><span className="text-amber-400">★★★★★</span> 4.9/5</span>
+          className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-white/25 px-4 mb-8">
+          <span className="flex items-center gap-1.5"><span className="text-amber-400">★★★★★</span> 4.9/5 rating</span>
           <span className="hidden sm:block w-px h-4 bg-white/10" />
           <span>No credit card required</span>
           <span className="hidden sm:block w-px h-4 bg-white/10" />
-          <span>25+ languages</span>
+          <span>25+ languages supported</span>
         </motion.div>
 
-        {/* Animated flag row */}
+        {/* Animated flag row — CSS animation, no framer-motion jank */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
-          className="mt-8 overflow-hidden w-full">
-          <motion.div className="flex gap-2"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}>
-            {["🇺🇸","🇵🇰","🇸🇦","🇮🇳","🇪🇸","🇫🇷","🇩🇪","🇨🇳","🇯🇵","🇰🇷","🇷🇺","🇮🇷","🇧🇩","🇧🇷","🇹🇷","🇮🇩",
-              "🇺🇸","🇵🇰","🇸🇦","🇮🇳","🇪🇸","🇫🇷","🇩🇪","🇨🇳","🇯🇵","🇰🇷","🇷🇺","🇮🇷","🇧🇩","🇧🇷","🇹🇷","🇮🇩",
-            ].map((flag, i) => (
+          className="overflow-hidden w-full">
+          {/* CSS-animated track — duplicated for seamless loop */}
+          <div className="flex animate-marquee-fast w-max">
+            {[...FLAGS, ...FLAGS, ...FLAGS].map((flag, i) => (
               <span key={i}
-                className="text-xl flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl"
+                className="text-xl flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl mx-0.5"
                 style={{ background: "rgba(255,255,255,0.04)" }}>
                 {flag}
               </span>
             ))}
-          </motion.div>
+          </div>
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* Scroll indicator — hidden on mobile to prevent overlap */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1.5 z-20">
         <span className="text-xs text-white/15">Scroll</span>
         <motion.div animate={{ y: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}
           className="w-4 h-7 rounded-full border border-white/10 flex items-start justify-center pt-1">

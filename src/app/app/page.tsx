@@ -52,6 +52,13 @@ export default function AppPage() {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
   }, []);
 
+  // Read ?lang= from URL on mount and apply it
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const lang = params.get("lang");
+    if (lang) setLanguage(lang);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Build a fresh recognition instance ──────────────────────
   const buildRecognition = useCallback(() => {
     if (typeof window === "undefined") return null;
