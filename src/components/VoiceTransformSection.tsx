@@ -28,15 +28,107 @@ const CLEAN_TEXTS = [
   "Excited to share that I'm starting a new role this Monday — a new chapter begins!",
 ];
 
-/* Build one long string for each strip by joining all items */
-const RAW_STRIP   = RAW_TEXTS.join("   ·   ");
-const CLEAN_STRIP = CLEAN_TEXTS.join("   ·   ");
+const SEP = "   ·   ";
+const RAW_STRIP   = RAW_TEXTS.join(SEP);
+const CLEAN_STRIP = CLEAN_TEXTS.join(SEP);
+
+/* ── Wave SVG paths over 1200 units (6 cycles × 200u) ──────── */
+/* viewBox: 0 0 1200 120  — center y=60, amplitude ±38          */
+const WAVE_DOWN = (() => {
+  const pts = ["M0,60"];
+  for (let i = 0; i < 6; i++) {
+    const x = i * 200;
+    pts.push(`C${x + 50},14 ${x + 150},106 ${x + 200},60`);
+  }
+  return pts.join(" ");
+})();
+
+const WAVE_UP = (() => {
+  const pts = ["M0,60"];
+  for (let i = 0; i < 6; i++) {
+    const x = i * 200;
+    pts.push(`C${x + 50},106 ${x + 150},14 ${x + 200},60`);
+  }
+  return pts.join(" ");
+})();
+
+/* ── Desktop: text follows SVG wave path ───────────────────── */
+function WaveTextStrip({
+  text,
+  pathD,
+  pathId,
+  scrollClass,
+  dim,
+  bold,
+}: {
+  text: string;
+  pathD: string;
+  pathId: string;
+  scrollClass: string;
+  dim: boolean;
+  bold: boolean;
+}) {
+  return (
+    <div className="overflow-hidden w-full">
+      <div className={`${scrollClass} flex`} style={{ width: "max-content" }}>
+        {[0, 1].map((idx) => (
+          <svg
+            key={idx}
+            viewBox="0 0 1200 120"
+            style={{ width: "100vw", minWidth: "100vw", height: "62px", display: "block" }}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <defs>
+              <path id={`${pathId}-${idx}`} d={pathD} />
+            </defs>
+            <text
+              fontSize="21"
+              fontFamily="Inter, system-ui, sans-serif"
+              fontWeight={bold ? 600 : 400}
+              fill={dim ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.88)"}
+              letterSpacing="1.5"
+            >
+              <textPath href={`#${pathId}-${idx}`}>{text}</textPath>
+            </text>
+          </svg>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Mobile: flat scrolling text ───────────────────────────── */
+function FlatTextStrip({
+  text,
+  direction,
+  dim,
+  bold,
+}: {
+  text: string;
+  direction: "left" | "right";
+  dim: boolean;
+  bold: boolean;
+}) {
+  const doubled = text + "     " + text;
+  const cls = direction === "left" ? "animate-marquee" : "animate-marquee-reverse";
+  return (
+    <div className="overflow-hidden w-full">
+      <div className={`${cls} whitespace-nowrap inline-block`}>
+        <span
+          className={`text-sm leading-none tracking-wide ${bold ? "font-semibold" : "font-normal"}`}
+          style={{ color: dim ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.88)" }}
+        >
+          {doubled}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 /* ── Pulsing mic processor ──────────────────────────────────── */
 function MicProcessor() {
   return (
     <div className="relative flex-shrink-0 flex items-center justify-center mx-6 sm:mx-10">
-      {/* Pulse rings */}
       {[1, 2, 3].map((i) => (
         <motion.div
           key={i}
@@ -60,39 +152,6 @@ function MicProcessor() {
       >
         <Mic size={22} className="text-white" />
       </motion.div>
-    </div>
-  );
-}
-
-/* ── One scrolling text strip ───────────────────────────────── */
-function TextStrip({
-  text,
-  direction,
-  dim,
-  bold,
-  speed,
-}: {
-  text: string;
-  direction: "left" | "right";
-  dim: boolean;
-  bold: boolean;
-  speed: string;
-}) {
-  const doubled = text + "     " + text;
-  const cls = direction === "left" ? "animate-marquee" : "animate-marquee-reverse";
-
-  return (
-    <div className="overflow-hidden w-full">
-      <div className={`${cls} ${speed} whitespace-nowrap inline-block`}>
-        <span
-          className={`text-sm sm:text-base lg:text-lg leading-none tracking-wide ${
-            bold ? "font-semibold text-white" : "font-normal"
-          }`}
-          style={{ color: dim ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.88)" }}
-        >
-          {doubled}
-        </span>
-      </div>
     </div>
   );
 }
@@ -145,20 +204,26 @@ export function VoiceTransformSection() {
       <div className="relative z-10 w-full">
 
         {/* RAW input strip */}
-        <div className="mb-6 flex items-center">
-          <div
-            className="flex-shrink-0 text-[10px] uppercase tracking-widest text-white/18 w-16 sm:w-24 text-right pr-3 sm:pr-5 select-none"
-          >
+        <div className="mb-4 flex items-center">
+          <div className="flex-shrink-0 text-[10px] uppercase tracking-widest text-white/18 w-16 sm:w-24 text-right pr-3 sm:pr-5 select-none">
             Raw
           </div>
-          <div className="flex-1 overflow-hidden py-2">
-            <TextStrip
-              text={RAW_STRIP}
-              direction="left"
-              dim={true}
-              bold={false}
-              speed=""
-            />
+          <div className="flex-1 overflow-hidden py-1">
+            {/* Mobile flat */}
+            <div className="sm:hidden">
+              <FlatTextStrip text={RAW_STRIP} direction="left" dim={true} bold={false} />
+            </div>
+            {/* Desktop wave */}
+            <div className="hidden sm:block">
+              <WaveTextStrip
+                text={RAW_STRIP}
+                pathD={WAVE_DOWN}
+                pathId="vf-raw-wave"
+                scrollClass="animate-marquee"
+                dim={true}
+                bold={false}
+              />
+            </div>
           </div>
         </div>
 
@@ -201,20 +266,26 @@ export function VoiceTransformSection() {
         </motion.div>
 
         {/* CLEAN output strip */}
-        <div className="mt-6 flex items-center">
-          <div
-            className="flex-shrink-0 text-[10px] uppercase tracking-widest text-brand-400/50 w-16 sm:w-24 text-right pr-3 sm:pr-5 select-none"
-          >
+        <div className="mt-4 flex items-center">
+          <div className="flex-shrink-0 text-[10px] uppercase tracking-widest text-brand-400/50 w-16 sm:w-24 text-right pr-3 sm:pr-5 select-none">
             AI
           </div>
-          <div className="flex-1 overflow-hidden py-2">
-            <TextStrip
-              text={CLEAN_STRIP}
-              direction="right"
-              dim={false}
-              bold={true}
-              speed=""
-            />
+          <div className="flex-1 overflow-hidden py-1">
+            {/* Mobile flat */}
+            <div className="sm:hidden">
+              <FlatTextStrip text={CLEAN_STRIP} direction="right" dim={false} bold={true} />
+            </div>
+            {/* Desktop wave (opposite curve) */}
+            <div className="hidden sm:block">
+              <WaveTextStrip
+                text={CLEAN_STRIP}
+                pathD={WAVE_UP}
+                pathId="vf-clean-wave"
+                scrollClass="animate-marquee-reverse"
+                dim={false}
+                bold={true}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -240,13 +311,13 @@ export function VoiceTransformSection() {
         <p className="text-white/25 text-sm mt-4">No credit card · 25+ languages · Works in 30 seconds</p>
       </motion.div>
 
-      {/* Fade edges on strips */}
+      {/* Fade edges */}
       <div
-        className="absolute inset-y-0 left-0 w-24 pointer-events-none z-20"
+        className="absolute inset-y-0 left-0 w-16 sm:w-24 pointer-events-none z-20"
         style={{ background: "linear-gradient(to right, #08080f, transparent)" }}
       />
       <div
-        className="absolute inset-y-0 right-0 w-24 pointer-events-none z-20"
+        className="absolute inset-y-0 right-0 w-16 sm:w-24 pointer-events-none z-20"
         style={{ background: "linear-gradient(to left, #08080f, transparent)" }}
       />
     </section>

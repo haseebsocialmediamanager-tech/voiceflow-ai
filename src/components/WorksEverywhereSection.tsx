@@ -5,45 +5,45 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Mic } from "lucide-react";
 import Link from "next/link";
 
-/* ── Exact path from Wisprflow ──────────────────────────────── */
 const SVG_PATH =
   "M0.629639 1.15771C82.9263 189.969 357.34 608.012 796.621 769.692C1235.9 931.372 1567.15 773.202 1711.79 678.175C1891.9 559.839 2155.65 289.609 2443.93 327.36C2732.2 365.111 3187.5 563.779 3568.82 1124.32";
 
-/* ── App icons ───────────────────────────────────────────────── */
+/* Real brand logos via simple-icons paths (24×24 viewBox) */
 const APPS = [
-  { name: "WhatsApp",  bg: "#25D366", letter: "W",   lsize: 58 },
-  { name: "Gmail",     bg: "#EA4335", letter: "M",   lsize: 58 },
-  { name: "ChatGPT",   bg: "#10A37F", letter: "AI",  lsize: 38 },
-  { name: "LinkedIn",  bg: "#0A66C2", letter: "in",  lsize: 40 },
-  { name: "Slack",     bg: "#4A154B", letter: "S",   lsize: 58 },
-  { name: "Notion",    bg: "#1a1a1a", letter: "N",   lsize: 58 },
-  { name: "Facebook",  bg: "#1877F2", letter: "f",   lsize: 64 },
-  { name: "Figma",     bg: "#F24E1E", letter: "F",   lsize: 58 },
-  { name: "VS Code",   bg: "#007ACC", letter: "</>", lsize: 32 },
-  { name: "Discord",   bg: "#5865F2", letter: "D",   lsize: 58 },
-  { name: "Instagram", bg: "#C13584", letter: "Ig",  lsize: 40 },
-  { name: "Zoom",      bg: "#2D8CFF", letter: "Z",   lsize: 58 },
-  { name: "Canva",     bg: "#7D2AE8", letter: "C",   lsize: 58 },
-  { name: "YouTube",   bg: "#FF0000", letter: "▶",   lsize: 48 },
-  { name: "X",         bg: "#111111", letter: "𝕏",   lsize: 58 },
-  { name: "Grammarly", bg: "#15C39A", letter: "G",   lsize: 58 },
-  { name: "Teams",     bg: "#6264A7", letter: "T",   lsize: 58 },
-  { name: "Sheets",    bg: "#34A853", letter: "S",   lsize: 58 },
+  { name:"WhatsApp",  bg:"#25D366", path:"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" },
+  { name:"Gmail",     bg:"#EA4335", path:"M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" },
+  { name:"YouTube",   bg:"#FF0000", path:"M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" },
+  { name:"Facebook",  bg:"#1877F2", path:"M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z" },
+  { name:"Instagram", bg:"#E4405F", path:"M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12c0 3.259.014 3.668.072 4.948.058 1.278.262 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24c3.259 0 3.668-.014 4.948-.072 1.277-.058 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.689.072-4.948 0-3.259-.014-3.667-.072-4.947-.058-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.163 6.162 6.163 3.405 0 6.162-2.76 6.162-6.163 0-3.403-2.76-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" },
+  { name:"Discord",   bg:"#5865F2", path:"M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942.0209-.0414.0017-.0903-.0401-.1047a13.2995 13.2995 0 01-1.9069-.9089.077.077 0 01-.0076-.1277c.1283-.0967.2567-.1973.379-.2992a.0743.0743 0 01.0776-.0105c4.0067 1.8328 8.3484 1.8328 12.3056 0a.0739.0739 0 01.0785.0095c.1202.1019.249.2034.3785.3002a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.9069.9098.0777.0777 0 00-.0409.1047c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z" },
+  { name:"Notion",    bg:"#000000", path:"M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z" },
+  { name:"Figma",     bg:"#F24E1E", path:"M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM10.735 0H6.245C3.769 0 1.754 2.014 1.754 4.49s2.015 4.491 4.491 4.491h4.49V0zm0 11.717h-4.49c-2.476 0-4.491 2.015-4.491 4.491S3.769 20.699 6.245 20.699c2.476 0 4.49-2.014 4.49-4.49v-4.492zm2.548 0v4.49c0 2.477 2.014 4.492 4.49 4.492 2.476 0 4.49-2.015 4.49-4.491s-2.014-4.491-4.49-4.491h-4.49zm0-2.736h4.49c2.476 0 4.49-2.015 4.49-4.491S20.324 0 17.848 0h-4.565v8.981z" },
+  { name:"Telegram",  bg:"#26A5E4", path:"M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" },
+  { name:"Zoom",      bg:"#0B5CFF", path:"M5.033 14.649H.743a.74.74 0 0 1-.686-.458.74.74 0 0 1 .16-.808L3.19 10.41H1.06A1.06 1.06 0 0 1 0 9.35h3.957c.301 0 .57.18.686.458a.74.74 0 0 1-.161.808L1.51 13.59h2.464c.585 0 1.06.475 1.06 1.06zM24 11.338c0-1.14-.927-2.066-2.066-2.066-.61 0-1.158.265-1.537.686a2.061 2.061 0 0 0-1.536-.686c-1.14 0-2.066.926-2.066 2.066v3.311a1.06 1.06 0 0 0 1.06-1.06v-2.251a1.004 1.004 0 0 1 2.013 0v2.251c0 .586.474 1.06 1.06 1.06v-3.311a1.004 1.004 0 0 1 2.012 0v2.251c0 .586.475 1.06 1.06 1.06zM16.265 12a2.728 2.728 0 1 1-5.457 0 2.728 2.728 0 0 1 5.457 0zm-1.06 0a1.669 1.669 0 1 0-3.338 0 1.669 1.669 0 0 0 3.338 0zm-4.82 0a2.728 2.728 0 1 1-5.458 0 2.728 2.728 0 0 1 5.457 0zm-1.06 0a1.669 1.669 0 1 0-3.338 0 1.669 1.669 0 0 0 3.338 0z" },
+  { name:"X",         bg:"#1a1a1a", path:"M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z" },
+  { name:"GitHub",    bg:"#24292e", path:"M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" },
+  { name:"Grammarly", bg:"#15C39A", path:"M12 24H.032V12c0-3.314 1.341-6.314 3.504-8.486C5.703 1.344 8.694 0 12 0c3.305 0 6.297 1.344 8.463 3.514 2.164 2.172 3.505 5.172 3.505 8.486s-1.338 6.314-3.505 8.486C18.297 22.656 15.305 24 12 24m2.889-13.137-1.271 2.205h4.418c-.505 2.882-3.018 5.078-6.036 5.078-3.38 0-6.132-2.757-6.132-6.146S8.618 5.854 12 5.854c1.821 0 3.458.801 4.584 2.069l1.143-1.988c-1.493-1.418-3.506-2.29-5.725-2.29-4.6 0-8.332 3.74-8.332 8.355s3.73 8.354 8.332 8.354c4.603 0 8.332-3.739 8.332-8.354 0-.387-.029-.765-.079-1.137z" },
+  { name:"Dropbox",   bg:"#0061FF", path:"M6 1.807L0 5.629l6 3.822 6.001-3.822L6 1.807zM18 1.807l-6 3.822 6 3.822 6-3.822-6-3.822zM0 13.274l6 3.822 6.001-3.822L6 9.452l-6 3.822zM18 9.452l-6 3.822 6 3.822 6-3.822-6-3.822zM6 18.371l6.001 3.822 6-3.822-6-3.822L6 18.371z" },
+  { name:"Trello",    bg:"#0052CC", path:"M21.147 0H2.853A2.86 2.86 0 000 2.853v18.294A2.86 2.86 0 002.853 24h18.294A2.86 2.86 0 0024 21.147V2.853A2.86 2.86 0 0021.147 0zM10.34 17.287a.953.953 0 01-.953.953h-4a.954.954 0 01-.954-.953V5.38a.953.953 0 01.954-.953h4a.954.954 0 01.953.953zm9.233-5.467a.944.944 0 01-.953.947h-4a.947.947 0 01-.953-.947V5.38a.953.953 0 01.953-.953h4a.954.954 0 01.953.953z" },
+  { name:"Asana",     bg:"#F06A6A", path:"M18.78 12.653c-2.882 0-5.22 2.336-5.22 5.22s2.338 5.22 5.22 5.22 5.22-2.34 5.22-5.22-2.336-5.22-5.22-5.22zm-13.56 0c-2.88 0-5.22 2.337-5.22 5.22s2.338 5.22 5.22 5.22 5.22-2.338 5.22-5.22-2.336-5.22-5.22-5.22zm12-6.525c0 2.883-2.337 5.22-5.22 5.22-2.882 0-5.22-2.337-5.22-5.22 0-2.88 2.338-5.22 5.22-5.22 2.883 0 5.22 2.34 5.22 5.22z" },
+  { name:"Docs",      bg:"#4285F4", path:"M14.727 6.727H14V0H4.91c-.905 0-1.637.732-1.637 1.636v20.728c0 .904.732 1.636 1.636 1.636h14.182c.904 0 1.636-.732 1.636-1.636V6.727h-6zm-.545 10.455H7.09v-1.364h7.09v1.364zm2.727-3.273H7.091v-1.364h9.818v1.364zm0-3.273H7.091V9.273h9.818v1.363zM14.727 6h6l-6-6v6z" },
+  { name:"Sheets",    bg:"#34A853", path:"M11.318 12.545H7.91v-1.909h3.41v1.91zM14.728 0v6h6l-6-6zm1.363 10.636h-3.41v1.91h3.41v-1.91zm0 3.273h-3.41v1.91h3.41v-1.91zM20.727 6.5v15.864c0 .904-.732 1.636-1.636 1.636H4.909a1.636 1.636 0 0 1-1.636-1.636V1.636C3.273.732 4.005 0 4.909 0h9.318v6.5h6.5zm-3.273 2.773H6.545v7.909h10.91v-7.91zm-6.136 4.636H7.91v1.91h3.41v-1.91z" },
+  { name:"Google",    bg:"#4285F4", path:"M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" },
 ];
+
 const N   = APPS.length;
-const DUR = 42; // seconds per full traversal
+const DUR = 44;
 
-/* ── Chat messages ──────────────────────────────────────────── */
+/* chat messages */
 const MESSAGES = [
-  { id: 0, side: "left",  text: "Hey, are you free for a quick call?" },
-  { id: 1, side: "right", text: "Yeah give me 5 mins, just wrapping up." },
-  { id: 2, side: "left",  text: "No rush! Did you see the updated proposal?" },
-  { id: 3, side: "right", text: "Yes! Looks great — few edits and we're good." },
-  { id: 4, side: "left",  text: "Perfect. I'll book the call for 3 pm then." },
-  { id: 5, side: "right", text: "Sounds good, talk then 👍" },
+  { id:0, side:"left",  text:"Hey, are you free for a quick call?" },
+  { id:1, side:"right", text:"Yeah give me 5 mins, wrapping up!" },
+  { id:2, side:"left",  text:"No rush! Did you see the proposal?" },
+  { id:3, side:"right", text:"Yes! Looks great — few edits and done." },
+  { id:4, side:"left",  text:"Perfect. I'll book 3 pm then." },
+  { id:5, side:"right", text:"Sounds good 👍" },
 ];
 
-/* ── Phone mockup ───────────────────────────────────────────── */
 function PhoneMockup() {
   const [visible, setVisible] = useState<number[]>([]);
   const [typing,  setTyping]  = useState(false);
@@ -53,7 +53,7 @@ function PhoneMockup() {
     let t: ReturnType<typeof setTimeout>;
     function next(i: number) {
       if (i >= MESSAGES.length) {
-        t = setTimeout(() => { setVisible([]); setTyping(false); setMicOn(false); setTimeout(() => next(0), 500); }, 3500);
+        t = setTimeout(() => { setVisible([]); setTyping(false); setMicOn(false); setTimeout(() => next(0), 600); }, 3500);
         return;
       }
       const msg = MESSAGES[i];
@@ -62,217 +62,125 @@ function PhoneMockup() {
       t = setTimeout(() => {
         setTyping(false); setMicOn(false);
         setVisible(v => [...v, msg.id]);
-        t = setTimeout(() => next(i + 1), 800 + msg.text.length * 20);
-      }, 900 + (msg.side === "right" ? 400 : 0));
+        t = setTimeout(() => next(i + 1), 900 + msg.text.length * 22);
+      }, 900 + (msg.side === "right" ? 350 : 0));
     }
     next(0);
     return () => clearTimeout(t);
   }, []);
 
   return (
-    <div className="relative mx-auto lg:mx-0 lg:ml-auto"
-      style={{ width: 240, height: 490, background: "#0d0d1c", borderRadius: 34,
-        border: "2px solid rgba(255,255,255,0.1)",
-        boxShadow: "0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)", overflow: "hidden" }}>
-
-      {/* Notch */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 rounded-b-2xl z-10" style={{ background: "#0d0d1c" }} />
-
-      {/* Header */}
+    <div className="relative mx-auto lg:mx-0 lg:ml-auto" style={{ width:240, height:490, background:"#0d0d1c", borderRadius:34, border:"2px solid rgba(255,255,255,0.1)", boxShadow:"0 32px 80px rgba(0,0,0,0.55)", overflow:"hidden" }}>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 rounded-b-2xl z-10" style={{ background:"#0d0d1c" }} />
       <div className="flex items-center gap-2 px-4 pt-6 pb-2.5 border-b border-white/5">
         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">J</div>
-        <div>
-          <div className="text-[12px] font-semibold text-white leading-none">Jordan</div>
-          <div className="text-[9px] text-green-400 mt-0.5">Online</div>
-        </div>
+        <div><div className="text-[12px] font-semibold text-white leading-none">Jordan</div><div className="text-[9px] text-green-400 mt-0.5">Online</div></div>
       </div>
-
-      {/* Messages */}
-      <div className="px-3 py-2 space-y-2 overflow-hidden" style={{ height: 328 }}>
+      <div className="px-3 py-2 space-y-2 overflow-hidden" style={{ height:328 }}>
         <AnimatePresence>
           {MESSAGES.filter(m => visible.includes(m.id)).map(msg => (
-            <motion.div key={msg.id}
-              initial={{ opacity: 0, y: 8, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.22 }}
-              className={`flex ${msg.side === "right" ? "justify-end" : "justify-start"}`}>
-              <div className="max-w-[80%] px-2.5 py-1.5 text-[10.5px] leading-relaxed"
-                style={{
-                  background: msg.side === "right" ? "rgba(99,102,241,0.88)" : "rgba(255,255,255,0.07)",
-                  color: msg.side === "right" ? "#fff" : "rgba(255,255,255,0.8)",
-                  borderRadius: msg.side === "right" ? "12px 12px 3px 12px" : "12px 12px 12px 3px",
-                }}>
-                {msg.text}
-              </div>
+            <motion.div key={msg.id} initial={{ opacity:0, y:8, scale:0.95 }} animate={{ opacity:1, y:0, scale:1 }} transition={{ duration:0.22 }} className={`flex ${msg.side==="right"?"justify-end":"justify-start"}`}>
+              <div className="max-w-[80%] px-2.5 py-1.5 text-[10.5px] leading-relaxed" style={{ background:msg.side==="right"?"rgba(99,102,241,0.88)":"rgba(255,255,255,0.07)", color:msg.side==="right"?"#fff":"rgba(255,255,255,0.8)", borderRadius:msg.side==="right"?"12px 12px 3px 12px":"12px 12px 12px 3px" }}>{msg.text}</div>
             </motion.div>
           ))}
-
           {typing && (
-            <motion.div key="typing" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="flex justify-end">
-              <div className="flex gap-1 items-center px-3 py-2 rounded-2xl rounded-br-sm" style={{ background: "rgba(99,102,241,0.3)" }}>
-                {[0, 1, 2].map(i => (
-                  <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-white/70"
-                    animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
-                    transition={{ duration: 0.75, repeat: Infinity, delay: i * 0.15 }} />
-                ))}
+            <motion.div key="typing" initial={{ opacity:0, y:5 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }} className="flex justify-end">
+              <div className="flex gap-1 items-center px-3 py-2 rounded-2xl rounded-br-sm" style={{ background:"rgba(99,102,241,0.3)" }}>
+                {[0,1,2].map(i => <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-white/70" animate={{ opacity:[0.3,1,0.3], y:[0,-3,0] }} transition={{ duration:0.75, repeat:Infinity, delay:i*0.15 }} />)}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-
-      {/* Voice bar */}
-      <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5 border-t border-white/5" style={{ background: "#0d0d1c" }}>
-        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-2xl"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}>
+      <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5 border-t border-white/5" style={{ background:"#0d0d1c" }}>
+        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-2xl" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.07)" }}>
           <div className="flex-1 flex items-center gap-px h-6 overflow-hidden">
-            {[...Array(24)].map((_, i) => (
-              <motion.div key={i} className="flex-shrink-0 rounded-full"
-                style={{ width: 1.5, background: micOn ? "#6366f1" : "rgba(255,255,255,0.1)" }}
-                animate={micOn ? { height: [2, 4 + Math.sin(i * 0.8) * 10, 2] } : { height: 2 }}
-                transition={micOn ? { duration: 0.3 + (i % 5) * 0.08, repeat: Infinity, delay: i * 0.03 } : {}} />
+            {[...Array(24)].map((_,i) => (
+              <motion.div key={i} className="flex-shrink-0 rounded-full" style={{ width:1.5, background:micOn?"#6366f1":"rgba(255,255,255,0.1)" }}
+                animate={micOn?{ height:[2,4+Math.sin(i*0.8)*10,2] }:{ height:2 }}
+                transition={micOn?{ duration:0.3+(i%5)*0.08, repeat:Infinity, delay:i*0.03 }:{}} />
             ))}
           </div>
           <motion.div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-            animate={micOn
-              ? { background: ["#6366f1", "#4f46e5", "#6366f1"], scale: [1, 1.1, 1] }
-              : { background: "#6366f1", scale: 1 }}
-            transition={{ duration: 1, repeat: Infinity }}>
+            animate={micOn?{ background:["#6366f1","#4f46e5","#6366f1"], scale:[1,1.1,1] }:{ background:"#6366f1", scale:1 }}
+            transition={{ duration:1, repeat:Infinity }}>
             <Mic size={12} className="text-white" />
           </motion.div>
         </div>
-        <div className="flex items-center gap-1 mt-1 px-0.5">
-          <span className="text-[9px]">🌐</span>
-          <span className="text-[8px] text-white/20">English</span>
-        </div>
+        <div className="flex items-center gap-1 mt-1 px-0.5"><span className="text-[9px]">🌐</span><span className="text-[8px] text-white/20">English</span></div>
       </div>
     </div>
   );
 }
 
-/* ── Section ────────────────────────────────────────────────── */
 export function WorksEverywhereSection() {
   return (
-    <section className="relative overflow-hidden" style={{ background: "#06060f" }}>
+    <section className="relative overflow-hidden" style={{ background:"#06060f" }}>
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] pointer-events-none" style={{ background:"radial-gradient(ellipse,rgba(99,102,241,0.07) 0%,transparent 70%)" }} />
 
-      {/* Ambient glow */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse, rgba(99,102,241,0.07) 0%, transparent 70%)" }} />
-
-      {/* ── Top content: badges + heading + phone ── */}
+      {/* Top content */}
       <div className="relative z-10 pt-20 sm:pt-28 pb-10 px-4 sm:px-6">
-
         {/* Platform badges */}
         <div className="flex justify-center flex-wrap gap-2 sm:gap-3 mb-12 sm:mb-16">
-          {[
-            { icon: "🍎", label: "iPhone" },
-            { icon: "🍎", label: "Mac" },
-            { icon: "⊞",  label: "Windows" },
-            { icon: "🤖", label: "Android" },
-          ].map(p => (
-            <div key={p.label}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm text-white/55"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)" }}>
+          {[{icon:"🍎",label:"iPhone"},{icon:"🍎",label:"Mac"},{icon:"⊞",label:"Windows"},{icon:"🤖",label:"Android"}].map(p => (
+            <div key={p.label} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm text-white/55" style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.09)" }}>
               <span>{p.icon}</span><span>{p.label}</span>
             </div>
           ))}
         </div>
 
-        {/* Two-col: text + phone */}
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
-          {/* Text */}
-          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.6 }}>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight mb-6">
-              Write faster in{" "}
-              <span className="text-white">all your apps,</span>{" "}
-              <span style={{ color: "rgba(255,255,255,0.35)" }}>on any device</span>
+              Write faster in <span className="text-white">all your apps,</span>{" "}
+              <span style={{ color:"rgba(255,255,255,0.35)" }}>on any device</span>
             </h2>
             <p className="text-white/45 text-lg leading-relaxed mb-10 max-w-lg">
-              Speak in any app — LinkedIn, Facebook, Gmail, WhatsApp, ChatGPT, Google Docs.
-              VoiceFlow types directly at your cursor. No switching tabs. No copy-paste.
+              Speak in any app — LinkedIn, Facebook, Gmail, WhatsApp, ChatGPT, Google Docs. VoiceFlow types directly at your cursor. No copy-paste.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/app"
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm text-white transition-all hover:scale-[1.03]"
-                style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)", boxShadow: "0 0 30px rgba(99,102,241,0.35)" }}>
+              <Link href="/app" className="flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm text-white transition-all hover:scale-[1.03]" style={{ background:"linear-gradient(135deg,#6366f1,#8b5cf6)", boxShadow:"0 0 30px rgba(99,102,241,0.35)" }}>
                 <Mic size={15} /> Try it free
               </Link>
-              <Link href="/install"
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm text-white/55 hover:text-white transition-colors"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)" }}>
+              <Link href="/install" className="flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm text-white/55 hover:text-white transition-colors" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.09)" }}>
                 Install extension ↗
               </Link>
             </div>
           </motion.div>
 
-          {/* Phone */}
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.15 }}
-            className="flex justify-center lg:justify-end">
+          <motion.div initial={{ opacity:0, y:30 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6, delay:0.15 }} className="flex justify-center lg:justify-end">
             <PhoneMockup />
           </motion.div>
         </div>
       </div>
 
-      {/* ── SVG wave with floating app icons ── */}
-      {/* paddingBottom = 1125/3570 = 31.5% preserves exact Wisprflow aspect ratio */}
-      <div className="relative w-full" style={{ paddingBottom: "28%", minHeight: 220 }}>
-        <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 3570 1125"
-          preserveAspectRatio="none"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+      {/* SVG wave with REAL brand logos */}
+      <div className="relative w-full" style={{ paddingBottom:"28%", minHeight:220 }}>
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 3570 1125" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <path id="vf-motion-path" d={SVG_PATH} />
           </defs>
 
-          {/* Decorative path line */}
-          <use href="#vf-motion-path" stroke="rgba(99,102,241,0.18)" strokeWidth="5" fill="none" />
+          {/* Decorative curve line */}
+          <use href="#vf-motion-path" stroke="rgba(99,102,241,0.2)" strokeWidth="4" fill="none" />
 
-          {/* ── Floating icons along the path ── */}
           {APPS.map((app, i) => {
             const begin = `${-((i / N) * DUR).toFixed(2)}s`;
+            /* scale the 24×24 icon to ~130×130 SVG units, centered at (0,0) */
+            const S = 130 / 24;
             return (
               <g key={app.name}>
-                {/* Shadow */}
-                <rect x="-61" y="-57" width="130" height="130" rx="30" fill="rgba(0,0,0,0.25)" />
-                {/* Icon card */}
-                <rect x="-65" y="-65" width="130" height="130" rx="30" fill={app.bg} />
-                {/* Letter */}
-                <text
-                  x="0" y={app.lsize > 50 ? "18" : "20"}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="white"
-                  fontSize={app.lsize}
-                  fontWeight="700"
-                  fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-                >
-                  {app.letter}
-                </text>
-                {/* Name label below icon */}
-                <text
-                  x="0" y="90"
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.32)"
-                  fontSize="26"
-                  fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-                >
-                  {app.name}
-                </text>
-
-                <animateMotion
-                  dur={`${DUR}s`}
-                  repeatCount="indefinite"
-                  begin={begin}
-                  calcMode="paced"
-                  rotate="0"
-                >
+                {/* Drop shadow */}
+                <rect x="-61" y="-57" width="130" height="130" rx="28" fill="rgba(0,0,0,0.3)" />
+                {/* Card background */}
+                <rect x="-65" y="-65" width="130" height="130" rx="28" fill={app.bg} />
+                {/* Brand logo — scale from 24×24, center at (0,0) */}
+                <g transform={`scale(${S}) translate(-12,-12)`}>
+                  <path d={app.path} fill="white" />
+                </g>
+                {/* App name below */}
+                <text x="0" y="92" textAnchor="middle" fill="rgba(255,255,255,0.38)" fontSize="26" fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">{app.name}</text>
+                <animateMotion dur={`${DUR}s`} repeatCount="indefinite" begin={begin} calcMode="paced" rotate="0">
                   <mpath href="#vf-motion-path" />
                 </animateMotion>
               </g>
@@ -281,11 +189,9 @@ export function WorksEverywhereSection() {
         </svg>
       </div>
 
-      {/* Fade left + right edges */}
-      <div className="absolute inset-y-0 left-0 w-16 pointer-events-none z-20"
-        style={{ background: "linear-gradient(to right,#06060f,transparent)" }} />
-      <div className="absolute inset-y-0 right-0 w-16 pointer-events-none z-20"
-        style={{ background: "linear-gradient(to left,#06060f,transparent)" }} />
+      {/* Fade edges */}
+      <div className="absolute inset-y-0 left-0 w-16 pointer-events-none z-20" style={{ background:"linear-gradient(to right,#06060f,transparent)" }} />
+      <div className="absolute inset-y-0 right-0 w-16 pointer-events-none z-20" style={{ background:"linear-gradient(to left,#06060f,transparent)" }} />
     </section>
   );
 }
