@@ -20,7 +20,7 @@ function ForgotModal({ onClose }: { onClose: () => void }) {
     setLoading(true);
 
     const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: "https://www.linkedwin.io/reset-password",
     });
 
     setLoading(false);

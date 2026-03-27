@@ -17,13 +17,33 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
 
-  // Supabase puts the recovery token in the URL hash.
-  // We listen for the session to be set from that token.
+  // Supabase sends the recovery token in the URL hash:
+  // /reset-password#access_token=xxx&type=recovery
+  // We need to exchange that token for a session, then allow password update.
   useEffect(() => {
+    // Parse the hash fragment manually
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get("access_token");
+    const refreshToken = params.get("refresh_token");
+    const type = params.get("type");
+
+    if (type === "recovery" && accessToken) {
+      // Set the session from the tokens in the hash
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken ?? "",
+      }).then(({ error }) => {
+        if (!error) setReady(true);
+      });
+      // Clean up the hash from the URL so it's not visible
+      window.history.replaceState(null, "", window.location.pathname);
+      return;
+    }
+
+    // Fallback: listen for PASSWORD_RECOVERY event (fired by Supabase client automatically)
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setReady(true);
-      }
+      if (event === "PASSWORD_RECOVERY") setReady(true);
     });
     return () => listener.subscription.unsubscribe();
   }, []);
