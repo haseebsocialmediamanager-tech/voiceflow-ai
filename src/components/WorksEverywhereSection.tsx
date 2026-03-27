@@ -126,7 +126,7 @@ export function WorksEverywhereSection() {
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] pointer-events-none" style={{ background:"radial-gradient(ellipse,rgba(99,102,241,0.07) 0%,transparent 70%)" }} />
 
       {/* Top content */}
-      <div className="relative z-10 pt-20 sm:pt-28 pb-10 px-4 sm:px-6">
+      <div className="relative z-10 pt-20 sm:pt-28 pb-10 px-6 sm:px-10">
         {/* Platform badges */}
         <div className="flex justify-center flex-wrap gap-2 sm:gap-3 mb-12 sm:mb-16">
           {[{icon:"🍎",label:"iPhone"},{icon:"🍎",label:"Mac"},{icon:"⊞",label:"Windows"},{icon:"🤖",label:"Android"}].map(p => (
@@ -137,15 +137,15 @@ export function WorksEverywhereSection() {
         </div>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.6 }}>
+          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-center lg:text-left">
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight mb-6">
               Write faster in <span className="text-white">all your apps,</span>{" "}
               <span style={{ color:"rgba(255,255,255,0.35)" }}>on any device</span>
             </h2>
-            <p className="text-white/45 text-lg leading-relaxed mb-10 max-w-lg">
+            <p className="text-white/45 text-lg leading-relaxed mb-10 max-w-lg mx-auto lg:mx-0">
               Speak in any app — LinkedIn, Facebook, Gmail, WhatsApp, ChatGPT, Google Docs. VoiceFlow types directly at your cursor. No copy-paste.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
               <Link href="/app" className="flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm text-white transition-all hover:scale-[1.03]" style={{ background:"linear-gradient(135deg,#6366f1,#8b5cf6)", boxShadow:"0 0 30px rgba(99,102,241,0.35)" }}>
                 <Mic size={15} /> Try it free
               </Link>
