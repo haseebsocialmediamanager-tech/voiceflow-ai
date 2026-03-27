@@ -40,7 +40,8 @@
   /* ── State ───────────────────────────────────────────────── */
   let recognition   = null;
   let isRecording   = false;
-  let accumulated   = '';       // final results
+  let accumulated   = '';       // final results only
+  let lastInterim   = '';       // most recent interim result (fallback for non-English)
   let currentLang   = 'en-US';
   let lastFocused   = null;     // last focused text element (tracked by focusin)
   let inlineTarget  = null;     // field we are injecting into (inline mode)
@@ -139,7 +140,7 @@
       <div id="vf-hud-dot"></div>
       <div id="vf-hud-text">Listening...</div>
     </div>
-    <div id="vf-hud-hint">Press <strong>Ctrl+9</strong> or <strong>S&thinsp;S</strong> again to stop &amp; insert</div>
+    <div id="vf-hud-hint">Press <strong>Space</strong> or <strong>Ctrl+9</strong> to stop &amp; insert</div>
   `;
 
   // Panel
@@ -280,6 +281,15 @@
     }
   }, true);
 
+  /* ── Spacebar — stop recording only (never intercepts normal typing) */
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && isRecording && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      stopRec();
+    }
+  }, true);
+
   /* ── SS shortcut — CAPTURE phase so it fires inside fields ── */
   document.addEventListener('keydown', (e) => {
     // Only plain S key, no modifiers
@@ -358,11 +368,10 @@
         setHudText('Listening...');
         // Hide panel if open
         panel.style.display = 'none';
-        panelOpen = false;
       } else {
         // Show waveform inside panel
         wave.style.display = 'flex';
-        setStatus('🔴 Listening… press SS again to stop');
+        setStatus('🔴 Listening… press Space or Ctrl+9 to stop');
         animWave();
       }
     };
@@ -374,8 +383,9 @@
         if (r.isFinal) fin += r[0].transcript;
         else inter += r[0].transcript;
       }
-      if (fin) accumulated += fin + ' ';
-      const full = (accumulated + inter).trim();
+      if (fin) { accumulated += fin + ' '; lastInterim = ''; }
+      else if (inter) lastInterim = inter; // save interim as fallback (fixes non-English)
+      const full = (accumulated + (fin ? '' : inter)).trim();
 
       if (inlineMode) {
         setHudText(full || 'Listening...');
@@ -407,16 +417,26 @@
 
   function stopRec() {
     isRecording = false;
-    if (recognition) {
-      recognition.onend = null;
-      try { recognition.stop(); } catch {}
-    }
     cancelAnimationFrame(waveTick);
     wave.style.display = 'none';
     fab.className = 'idle';
     fab.innerHTML = micSVG(24);
 
-    const text = accumulated.trim();
+    if (!recognition) { finalizeAndInject(); return; }
+
+    // Wait for onend so any pending final results (especially non-English) arrive first
+    let done = false;
+    const finish = () => { if (done) return; done = true; finalizeAndInject(); };
+    recognition.onend = finish;
+    try { recognition.stop(); } catch { finish(); }
+  }
+
+  function finalizeAndInject() {
+    // Use accumulated finals + last interim as fallback (fixes Arabic/Urdu/etc.)
+    const text = (accumulated + lastInterim).trim();
+    accumulated  = '';
+    lastInterim  = '';
+    recognition  = null;
 
     if (inlineMode && inlineTarget) {
       hud.style.display = 'none';
@@ -425,7 +445,6 @@
         if (ok) {
           flashHud('✅ Inserted!');
         } else {
-          // Fallback: clipboard
           navigator.clipboard.writeText(text).catch(() => {});
           flashHud('📋 Copied — press Ctrl+V to paste');
         }
@@ -433,7 +452,6 @@
         flashHud('Nothing recorded');
       }
     } else {
-      // Panel mode
       if (text) {
         showInPanel(text);
         setStatus('✅ Done — click "Insert at cursor" or Copy');
@@ -442,8 +460,6 @@
         setStatus('Nothing recorded — try again');
       }
     }
-
-    accumulated = '';
   }
 
   /* ── Inject text into a field ────────────────────────────── */
