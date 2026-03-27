@@ -36,12 +36,39 @@ export default function AppPage() {
   const [compact, setCompact] = useState(false);
   const [showShortcutHint, setShowShortcutHint] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [translateTo, setTranslateTo] = useState("none");
 
   const recognitionRef = useRef<any>(null);
   const accumulatedRef = useRef<string>("");
   const streamRef = useRef<MediaStream | null>(null);
   const languageRef = useRef(language);
+  const translateToRef = useRef(translateTo);
   const isLang = getLang(language);
+
+  useEffect(() => { translateToRef.current = translateTo; }, [translateTo]);
+
+  // Free Google Translate (no API key needed)
+  const translateText = useCallback(async (text: string, fromLang: string, toLang: string): Promise<string> => {
+    if (!toLang || toLang === "none") return text;
+    // Map speech recognition codes to Google Translate codes
+    const gtrans: Record<string, string> = {
+      "en-US": "en", "en-GB": "en", "ur-PK": "ur", "ar-SA": "ar", "ar-AE": "ar",
+      "hi-IN": "hi", "es-ES": "es", "es-MX": "es", "fr-FR": "fr", "de-DE": "de",
+      "zh-CN": "zh-CN", "zh-TW": "zh-TW", "ja-JP": "ja", "ko-KR": "ko",
+      "ru-RU": "ru", "pt-BR": "pt", "it-IT": "it", "tr-TR": "tr", "fa-IR": "fa",
+      "bn-BD": "bn", "pa-IN": "pa", "ms-MY": "ms", "id-ID": "id", "nl-NL": "nl",
+    };
+    const from = gtrans[fromLang] || "auto";
+    if (from === toLang) return text;
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data[0].map((c: any) => c[0]).join("");
+    } catch {
+      return text;
+    }
+  }, []);
 
   // Keep languageRef in sync so callbacks always have the latest language
   useEffect(() => { languageRef.current = language; }, [language]);
@@ -187,10 +214,16 @@ export default function AppPage() {
     setTranscript(text);
     setLiveText("");
 
+    // Translate first if a target language is selected
+    const toLang = translateToRef.current;
+    const baseText = toLang !== "none"
+      ? await translateText(text, languageRef.current, toLang)
+      : text;
+
     if (enhanceLevel > 0 && enhanceMode !== "raw") {
       setIsEnhancing(true);
       try {
-        const result = await enhanceText(text, enhanceMode, enhanceLevel, language);
+        const result = await enhanceText(baseText, enhanceMode, enhanceLevel, language);
         setEnhanced(result);
         setActiveTab("enhanced");
 
@@ -206,23 +239,23 @@ export default function AppPage() {
           mode: enhanceMode, language, createdAt: new Date().toISOString(),
         });
       } catch {
-        setEnhanced(text);
-        await navigator.clipboard.writeText(text).catch(() => {});
+        setEnhanced(baseText);
+        await navigator.clipboard.writeText(baseText).catch(() => {});
         toast.success("Copied! Paste with Ctrl+V", { duration: 3000 });
       } finally {
         setIsEnhancing(false);
       }
     } else {
-      setEnhanced(text);
-      const mode = injectTextAtCursor(text);
+      setEnhanced(baseText);
+      const mode = injectTextAtCursor(baseText);
       if (mode === "clipboard") {
-        await navigator.clipboard.writeText(text).catch(() => {});
+        await navigator.clipboard.writeText(baseText).catch(() => {});
         toast.success("Copied! Paste anywhere with Ctrl+V", { icon: "📋", duration: 4000 });
       } else {
         toast.success("Text injected!", { icon: "✍️" });
       }
     }
-  }, [setRecording, setTranscript, setEnhanced, enhanceMode, enhanceLevel, language, addToHistory]);
+  }, [setRecording, setTranscript, setEnhanced, enhanceMode, enhanceLevel, language, addToHistory, translateText]);
 
   const toggleRecording = useCallback(() => {
     if (isRecording) stopRecording();
@@ -394,6 +427,31 @@ export default function AppPage() {
             <div className="px-4 py-4 space-y-4">
               <ModeSelector mode={enhanceMode} onChange={setEnhanceMode} />
               <EnhancementSlider value={enhanceLevel} onChange={setEnhanceLevel} />
+              {/* Translate row */}
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-white/40 flex-shrink-0">Translate to</span>
+                <select
+                  value={translateTo}
+                  onChange={(e) => setTranslateTo(e.target.value)}
+                  className="flex-1 px-3 py-1.5 rounded-xl text-xs text-white outline-none"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                >
+                  <option value="none">Off (keep original)</option>
+                  <option value="en">🇺🇸 English</option>
+                  <option value="ur">🇵🇰 Urdu</option>
+                  <option value="ar">🇸🇦 Arabic</option>
+                  <option value="hi">🇮🇳 Hindi</option>
+                  <option value="es">🇪🇸 Spanish</option>
+                  <option value="fr">🇫🇷 French</option>
+                  <option value="de">🇩🇪 German</option>
+                  <option value="zh-CN">🇨🇳 Chinese</option>
+                  <option value="ja">🇯🇵 Japanese</option>
+                  <option value="ko">🇰🇷 Korean</option>
+                  <option value="ru">🇷🇺 Russian</option>
+                  <option value="tr">🇹🇷 Turkish</option>
+                  <option value="pt">🇧🇷 Portuguese</option>
+                </select>
+              </div>
               {!isMobile && (
                 <p className="text-xs text-white/25 flex items-center gap-1.5">
                   <Keyboard size={11} />
@@ -672,6 +730,31 @@ export default function AppPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Floating F2 shortcut badge — desktop only */}
+      {!isMobile && (
+        <motion.button
+          onClick={toggleRecording}
+          whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
+          className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-2xl select-none"
+          style={{
+            background: isRecording ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.12)",
+            border: isRecording ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(99,102,241,0.25)",
+            backdropFilter: "blur(12px)",
+            boxShadow: isRecording ? "0 0 20px rgba(239,68,68,0.2)" : "0 0 20px rgba(99,102,241,0.15)",
+          }}
+        >
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRecording ? "bg-red-400 animate-pulse" : "bg-brand-400"}`} />
+          <span className="text-xs text-white/60 font-medium">
+            {isRecording ? "Recording..." : "Press"}
+          </span>
+          <kbd className="text-xs font-bold px-1.5 py-0.5 rounded-md"
+            style={{ background: "rgba(255,255,255,0.1)", color: isRecording ? "#f87171" : "#a5b4fc", border: "1px solid rgba(255,255,255,0.12)" }}>
+            F2
+          </kbd>
+          {!isRecording && <span className="text-xs text-white/40">to start</span>}
+        </motion.button>
+      )}
     </div>
   );
 }
