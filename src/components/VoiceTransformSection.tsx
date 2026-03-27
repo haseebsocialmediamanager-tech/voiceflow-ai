@@ -4,31 +4,22 @@ import { motion } from "framer-motion";
 import { Mic } from "lucide-react";
 import Link from "next/link";
 
-/* ── Raw speech snippets (messy, unpolished) ────────────────── */
+/* ── Raw speech snippets (short, messy) ─────────────────────── */
 const RAW_TEXTS = [
-  "um so basically i wanted to say that the project is like kinda done but not really",
-  "yeah so i was thinking maybe we could like you know push the deadline a bit",
-  "hey so the meeting was really good i think we uh covered most of the stuff",
-  "so i need you to uh write me an email to the client about the you know the invoice",
-  "honestly the product is really good i just think the price is a little bit too high",
-  "so basically what happened was um i forgot to send the report and now they're upset",
-  "i think we should just go ahead and launch it like why are we waiting so long",
-  "can you help me write a linkedin post about my new job i start on monday",
+  "um...", "like you know", "basically", "kinda done", "uh...",
+  "sort of", "I mean", "right?", "honestly", "so...",
+  "like literally", "you know?", "kinda", "whatever", "ugh",
 ];
 
-/* ── Polished AI-enhanced versions ─────────────────────────── */
+/* ── Polished AI versions (short, clean) ───────────────────── */
 const CLEAN_TEXTS = [
-  "The project is nearing completion with a few remaining items to finalize.",
-  "I'd like to propose adjusting the project deadline to allow for thorough review.",
-  "The meeting was highly productive — we addressed the key agenda points effectively.",
-  "Please draft a professional email to the client regarding the outstanding invoice.",
-  "The product quality is excellent. I believe the pricing could be more competitive.",
-  "I inadvertently omitted the report from yesterday's submission — apologies for any inconvenience.",
-  "I recommend proceeding with the launch. Further delays may impact our momentum.",
-  "Excited to share that I'm starting a new role this Monday — a new chapter begins!",
+  "Understood", "Certainly", "I'd suggest", "To clarify",
+  "Please note", "Confirmed", "I recommend", "Noted",
+  "In summary", "As requested", "Proceeding", "Thank you",
+  "Acknowledged", "With pleasure", "On it",
 ];
 
-const SEP = "   ·   ";
+const SEP = "     ·     ";
 const RAW_STRIP   = RAW_TEXTS.join(SEP);
 const CLEAN_STRIP = CLEAN_TEXTS.join(SEP);
 

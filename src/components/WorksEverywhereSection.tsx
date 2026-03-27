@@ -155,31 +155,29 @@ export function WorksEverywhereSection() {
       </div>
 
       {/* SVG wave with REAL brand logos */}
-      <div className="relative w-full" style={{ paddingBottom:"28%", minHeight:220 }}>
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 3570 1125" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <div className="relative w-full overflow-hidden">
+        <svg width="100%" viewBox="0 0 3570 1125" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <path id="vf-motion-path" d={SVG_PATH} />
           </defs>
 
           {/* Decorative curve line */}
-          <use href="#vf-motion-path" stroke="rgba(99,102,241,0.2)" strokeWidth="4" fill="none" />
+          <use href="#vf-motion-path" stroke="rgba(99,102,241,0.18)" strokeWidth="3" fill="none" />
 
           {APPS.map((app, i) => {
             const begin = `${-((i / N) * DUR).toFixed(2)}s`;
-            /* scale the 24×24 icon to ~130×130 SVG units, centered at (0,0) */
-            const S = 130 / 24;
+            /* logo: 72×72 SVG units, centered in a 120×120 white card */
+            const S = 72 / 24;
             return (
               <g key={app.name}>
-                {/* Drop shadow */}
-                <rect x="-61" y="-57" width="130" height="130" rx="28" fill="rgba(0,0,0,0.3)" />
-                {/* Card background */}
-                <rect x="-65" y="-65" width="130" height="130" rx="28" fill={app.bg} />
-                {/* Brand logo — scale from 24×24, center at (0,0) */}
+                {/* Shadow */}
+                <rect x="-57" y="-53" width="120" height="120" rx="26" fill="rgba(0,0,0,0.25)" />
+                {/* White card */}
+                <rect x="-60" y="-60" width="120" height="120" rx="26" fill="rgba(255,255,255,0.97)" />
+                {/* Brand logo — 72×72, centered: spans -36 to +36 */}
                 <g transform={`scale(${S}) translate(-12,-12)`}>
-                  <path d={app.path} fill="white" />
+                  <path d={app.path} fill={app.bg} />
                 </g>
-                {/* App name below */}
-                <text x="0" y="92" textAnchor="middle" fill="rgba(255,255,255,0.38)" fontSize="26" fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">{app.name}</text>
                 <animateMotion dur={`${DUR}s`} repeatCount="indefinite" begin={begin} calcMode="paced" rotate="0">
                   <mpath href="#vf-motion-path" />
                 </animateMotion>
