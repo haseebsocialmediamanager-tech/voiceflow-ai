@@ -324,7 +324,19 @@ export default function AppPage() {
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          <LanguageSelector value={language} onChange={setLanguage} />
+          <LanguageSelector
+            value={language}
+            onChange={(code) => {
+              setLanguage(code);
+              const selected = getLang(code);
+              toast.success(`${selected.flag} ${selected.nativeName}`, { duration: 1500, icon: undefined });
+              // If currently recording, stop so user can restart in new language
+              if (isRecording) {
+                stopRecording();
+                toast("Tap mic to record in new language", { icon: "🎙️", duration: 2500 });
+              }
+            }}
+          />
           <button onClick={() => setShowHistory(!showHistory)}
             className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs transition-colors ${
               showHistory ? "bg-brand-600/30 text-brand-300" : "text-white/35 hover:text-white hover:bg-white/5"
