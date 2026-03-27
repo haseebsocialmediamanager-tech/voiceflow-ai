@@ -283,7 +283,7 @@
 
   /* ── F1 — start / stop recording ────────────────────────── */
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'F1') {
+    if (e.key === 'F2') {
       e.preventDefault();
       e.stopImmediatePropagation();
       triggerToggle();
