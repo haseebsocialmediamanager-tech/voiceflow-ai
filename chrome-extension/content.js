@@ -281,12 +281,14 @@
     }
   }, true);
 
-  /* ── Spacebar — stop recording only (never intercepts normal typing) */
+  /* ── Spacebar — toggle start/stop recording ─────────────────
+     Space starts OR stops. When starting from a text field the
+     space keystroke is suppressed so nothing is typed.          */
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && isRecording && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+    if (e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
       e.preventDefault();
       e.stopImmediatePropagation();
-      stopRec();
+      triggerToggle();
     }
   }, true);
 
