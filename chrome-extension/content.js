@@ -281,17 +281,16 @@
     }
   }
 
-  /* ── Ctrl+9 shortcut — works everywhere, types nothing ───── */
-  document.addEventListener('keydown', (e) => {
+  /* ── Keyboard shortcuts — on window (fires before document) ─ */
+  window.addEventListener('keydown', (e) => {
+    // Ctrl+9 — backup shortcut
     if (e.key === '9' && (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) {
       e.preventDefault();
       e.stopImmediatePropagation();
       triggerToggle();
+      return;
     }
-  }, true);
-
-  /* ── Spacebar — toggle start/stop recording ─────────────── */
-  document.addEventListener('keydown', (e) => {
+    // Spacebar — start / stop
     if (e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
       e.preventDefault();
       e.stopImmediatePropagation();
