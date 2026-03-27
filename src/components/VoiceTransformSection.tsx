@@ -8,13 +8,6 @@ import Link from "next/link";
 const RAW_LONG =
   "Umm so basically what I wanted to say is... the deadline thing is kinda ugh you know? I told the team it should be ready by Friday although it's probably gonna slip again. There's been so much back and forth and like nobody really knows what's going on. Can you check if Sarah sent out the notes from yesterday's meeting? I think she mentioned it but I'm kinda lost. Also the client invoice — uh I forgot to send it and now they're upset but like honestly the product is really good so...   ·   ";
 
-/* ── Short clean phrases flow along the diagonal ribbon ────────── */
-const RIBBON_TEXT =
-  "Confirmed  ·  Understood  ·  On it  ·  Certainly  ·  I'll proceed  ·  Noted  ·  Thank you  ·  Acknowledged  ·  I recommend  ·  With pleasure  ·  As requested  ·  Absolutely  ·  Great point  ·  Proceeding  ·  My pleasure  ·  ";
-
-/* ── Diagonal path: sweeps from bottom-left to upper-right ────── */
-/* viewBox: 0 0 1200 140  — path starts low-left, ends high-right  */
-const DIAG_PATH = "M-30,128 C280,90 720,38 1230,10";
 
 /* ── Section ─────────────────────────────────────────────────── */
 export function VoiceTransformSection() {
@@ -113,57 +106,6 @@ export function VoiceTransformSection() {
         </p>
       </motion.div>
 
-      {/* ── Diagonal ribbon — short clean phrases ── */}
-      <div
-        className="absolute left-0 right-0 pointer-events-none"
-        style={{ bottom: 0, zIndex: 10 }}
-      >
-        <div className="overflow-hidden w-full">
-          {/* Two SVGs side-by-side, animate-marquee-reverse scrolls them */}
-          <div
-            className="animate-marquee-reverse flex"
-            style={{ width: "max-content" }}
-          >
-            {[0, 1].map((idx) => (
-              <svg
-                key={idx}
-                viewBox="0 0 1200 140"
-                style={{
-                  width: "100vw",
-                  minWidth: "100vw",
-                  height: "140px",
-                  display: "block",
-                }}
-                preserveAspectRatio="none"
-              >
-                <defs>
-                  <path id={`vf-diag-${idx}`} d={DIAG_PATH} />
-                </defs>
-                {/* Thick ribbon stroke */}
-                <use
-                  href={`#vf-diag-${idx}`}
-                  stroke="rgba(255,255,255,0.95)"
-                  strokeWidth="68"
-                  fill="none"
-                  strokeLinecap="butt"
-                />
-                {/* Short phrases on ribbon */}
-                <text
-                  fontSize="20"
-                  fontFamily="Inter, system-ui, sans-serif"
-                  fontWeight="700"
-                  fill="#0a0a14"
-                  letterSpacing="0.5"
-                >
-                  <textPath href={`#vf-diag-${idx}`} startOffset="2%">
-                    {RIBBON_TEXT}
-                  </textPath>
-                </text>
-              </svg>
-            ))}
-          </div>
-        </div>
-      </div>
     </section>
   );
 }
