@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "VoiceFlow AI",
+  "name": "VoiceFlow AI — Voice Dictation in Any Text Box",
   "version": "1.0.0",
-  "description": "Speak in any text box — AI voice dictation in 25+ languages including Urdu, Arabic, Hindi. Works on Facebook, Gmail, WhatsApp Web, everywhere.",
+  "description": "Speak into any text box on any website. AI voice dictation in 25+ languages including Urdu, Arabic, Hindi, English. Works on Gmail, WhatsApp Web, Facebook, Twitter, LinkedIn, Google Docs — everywhere. Press Spacebar to start and stop.",
   "permissions": ["storage"],
   "host_permissions": ["<all_urls>"],
   "content_scripts": [
@@ -15,7 +15,12 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "VoiceFlow AI — Click to open"
+    "default_title": "VoiceFlow AI — Click to open",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
