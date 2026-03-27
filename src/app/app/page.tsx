@@ -382,19 +382,11 @@ export default function AppPage() {
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          <LanguageSelector
-            value={language}
-            onChange={(code) => {
-              setLanguage(code);
-              const selected = getLang(code);
-              toast.success(`${selected.flag} ${selected.nativeName}`, { duration: 1500, icon: undefined });
-              // If currently recording, stop so user can restart in new language
-              if (isRecording) {
-                stopRecording();
-                toast("Tap mic to record in new language", { icon: "🎙️", duration: 2500 });
-              }
-            }}
-          />
+          {/* current language badge */}
+          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl glass text-xs text-white/50">
+            <span>{isLang.flag}</span>
+            <span className="hidden sm:inline">{isLang.nativeName}</span>
+          </div>
           <button onClick={() => setShowHistory(!showHistory)}
             className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs transition-colors ${
               showHistory ? "bg-brand-600/30 text-brand-300" : "text-white/35 hover:text-white hover:bg-white/5"
@@ -536,69 +528,66 @@ export default function AppPage() {
             <RealWaveform stream={audioStream} isActive={isRecording} bars={36} />
           </div>
 
-          {/* ── Mobile Language Grid — always visible, no dropdown ── */}
-          {isMobile && (
-            <div className="w-full max-w-sm mb-3">
-              <p className="text-[11px] text-white/30 text-center mb-2.5">
-                {isRecording ? `🔴 Listening in ${isLang.flag} ${isLang.nativeName}` : "Tap your language, then tap the mic"}
-              </p>
-              <div className="grid grid-cols-4 gap-1.5">
-                {LANGUAGES.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onPointerDown={() => {
-                      setLanguage(lang.code);
-                      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                      if (isIOS && lang.code !== "en-US" && lang.code !== "en-GB") {
-                        toast(`${lang.flag} ${lang.nativeName} selected.\nIf it fails, add this language in iPhone Settings → General → Language & Region`, {
-                          icon: "ℹ️", duration: 4000,
-                          style: { fontSize: "11px", maxWidth: "300px", whiteSpace: "pre-line" },
-                        });
-                      } else {
-                        toast.success(`${lang.flag} ${lang.nativeName}`, { duration: 1200 });
-                      }
-                      if (isRecording) stopRecording();
-                    }}
-                    disabled={isRecording}
-                    className={`flex flex-col items-center gap-1 py-2 px-1 rounded-2xl border transition-all active:scale-95 touch-manipulation ${
-                      language === lang.code
-                        ? "border-brand-500/60 bg-brand-600/25"
-                        : "border-white/6 bg-white/[0.02] active:bg-white/5"
+          {/* ── Language Grid — all devices ── */}
+          <div className="w-full max-w-lg mb-3">
+            <p className="text-[11px] text-white/30 text-center mb-2.5">
+              {isRecording ? `🔴 Listening in ${isLang.flag} ${isLang.nativeName}` : "Select language · then press mic or F2"}
+            </p>
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onPointerDown={() => {
+                    setLanguage(lang.code);
+                    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                    if (isIOS && lang.code !== "en-US" && lang.code !== "en-GB") {
+                      toast(`${lang.flag} ${lang.nativeName} selected.\nIf it fails, add in iPhone Settings → General → Language & Region`, {
+                        icon: "ℹ️", duration: 4000,
+                        style: { fontSize: "11px", maxWidth: "300px", whiteSpace: "pre-line" },
+                      });
+                    } else {
+                      toast.success(`${lang.flag} ${lang.nativeName}`, { duration: 1200 });
+                    }
+                    if (isRecording) stopRecording();
+                  }}
+                  disabled={isRecording}
+                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded-2xl border transition-all active:scale-95 touch-manipulation hover:bg-white/5 ${
+                    language === lang.code
+                      ? "border-brand-500/60 bg-brand-600/25"
+                      : "border-white/6 bg-white/[0.02]"
+                  }`}
+                  style={{ WebkitTapHighlightColor: "transparent" }}
+                >
+                  <span className="text-xl leading-none">{lang.flag}</span>
+                  <span
+                    className={`text-[9px] leading-tight text-center w-full truncate px-0.5 ${
+                      language === lang.code ? "text-brand-300 font-semibold" : "text-white/40"
                     }`}
-                    style={{ WebkitTapHighlightColor: "transparent" }}
+                    dir={lang.rtl ? "rtl" : "ltr"}
+                    style={{ fontFamily: lang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}
                   >
-                    <span className="text-xl leading-none">{lang.flag}</span>
-                    <span
-                      className={`text-[9px] leading-tight text-center w-full truncate px-0.5 ${
-                        language === lang.code ? "text-brand-300 font-semibold" : "text-white/40"
-                      }`}
-                      dir={lang.rtl ? "rtl" : "ltr"}
-                      style={{ fontFamily: lang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}
-                    >
-                      {lang.nativeName}
-                    </span>
-                  </button>
-                ))}
-              </div>
+                    {lang.nativeName}
+                  </span>
+                </button>
+              ))}
             </div>
-          )}
+          </div>
 
-          {/* Mode + settings shortcut on mobile */}
-          {isMobile && (
-            <div className="w-full max-w-sm mb-3">
-              <button onClick={() => setShowSettings(!showSettings)}
-                className="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl text-sm text-white/40 transition-colors active:bg-white/5"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <span className="flex items-center gap-2">
-                  <Settings size={14} />
-                  {enhanceMode.charAt(0).toUpperCase() + enhanceMode.slice(1)} mode · {
-                    enhanceLevel === 0 ? "No AI" : enhanceLevel < 40 ? "Light" : enhanceLevel < 75 ? "Balanced" : "Full"
-                  }
-                </span>
-                <ChevronDown size={14} className={showSettings ? "rotate-180" : ""} />
-              </button>
-            </div>
-          )}
+          {/* AI mode + translate settings toggle */}
+          <div className="w-full max-w-lg mb-3">
+            <button onClick={() => setShowSettings(!showSettings)}
+              className="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl text-sm text-white/40 transition-colors hover:bg-white/5 active:bg-white/5"
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <span className="flex items-center gap-2">
+                <Settings size={14} />
+                {enhanceMode.charAt(0).toUpperCase() + enhanceMode.slice(1)} mode · {
+                  enhanceLevel === 0 ? "No AI" : enhanceLevel < 40 ? "Light" : enhanceLevel < 75 ? "Balanced" : "Full"
+                }
+                {translateTo !== "none" && <span className="text-brand-400 text-xs">· Translating</span>}
+              </span>
+              <ChevronDown size={14} className={showSettings ? "rotate-180" : ""} />
+            </button>
+          </div>
 
           {/* ── Text panel ── */}
           <AnimatePresence mode="wait">
