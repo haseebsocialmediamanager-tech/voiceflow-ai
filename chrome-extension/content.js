@@ -46,7 +46,6 @@
   let lastFocused   = null;     // last focused text element (tracked by focusin)
   let inlineTarget  = null;     // field we are injecting into (inline mode)
   let inlineMode    = false;    // true = SS from inside a text field
-  let lastS         = 0;        // timestamp of last 's' keypress (for SS detection)
   let waveTick      = null;
 
   // Load saved language
@@ -281,70 +280,19 @@
     }
   }, true);
 
-  /* ── Spacebar — toggle start/stop recording ─────────────────
-     Space starts OR stops. When starting from a text field the
-     space keystroke is suppressed so nothing is typed.          */
+  /* ── S key — single press toggles start/stop recording ──────
+     S starts OR stops. The keystroke is suppressed so nothing
+     is typed into the field.                                    */
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+    if (e.key.toLowerCase() === 's' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
       e.preventDefault();
       e.stopImmediatePropagation();
       triggerToggle();
     }
   }, true);
 
-  /* ── SS shortcut — CAPTURE phase so it fires inside fields ── */
-  document.addEventListener('keydown', (e) => {
-    // Only plain S key, no modifiers
-    if (e.key.toLowerCase() !== 's' || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
 
-    const now = Date.now();
-
-    if (now - lastS < 500) {
-      // ✅ SS detected!
-      e.preventDefault();
-      e.stopImmediatePropagation(); // stop ALL other listeners including same-phase
-
-      const active = document.activeElement;
-      const isField = active && !root.contains(active) && (
-        active.tagName === 'INPUT' ||
-        active.tagName === 'TEXTAREA' ||
-        active.isContentEditable
-      );
-
-      if (!isRecording && isField) {
-        // Remove the first 's' that was already typed into the field
-        removeTypedS(active);
-      }
-
-      triggerToggle(isField ? active : null);
-      lastS = 0;
-    } else {
-      lastS = now;
-    }
-  }, true); // ← capture = true is essential
-
-  /* ── Remove the first 's' that was typed before SS triggered */
-  function removeTypedS(el) {
-    try {
-      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        const pos = el.selectionStart;
-        if (pos > 0 && el.value[pos - 1].toLowerCase() === 's') {
-          const proto = el.tagName === 'INPUT' ? HTMLInputElement.prototype : HTMLTextAreaElement.prototype;
-          const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
-          const newVal = el.value.slice(0, pos - 1) + el.value.slice(pos);
-          if (setter) setter.call(el, newVal); else el.value = newVal;
-          el.selectionStart = el.selectionEnd = pos - 1;
-          el.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-      } else if (el.isContentEditable) {
-        // execCommand 'delete' removes one character before cursor
-        el.focus();
-        document.execCommand('delete');
-      }
-    } catch {}
-  }
-
-  /* ── Speech Recognition ──────────────────────────────────── */
+/* ── Speech Recognition ──────────────────────────────────── */
   function startRec() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
