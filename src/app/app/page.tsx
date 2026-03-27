@@ -466,14 +466,10 @@ export default function AppPage() {
                       border: language === lang.code ? "1px solid rgba(99,102,241,0.5)" : "1px solid transparent",
                       WebkitTapHighlightColor: "transparent",
                     }}>
-                    <div className="w-8 h-6 rounded-md overflow-hidden flex-shrink-0 shadow-sm">
-                      <img
-                        src={`https://flagcdn.com/w40/${lang.code.split("-")[1]?.toLowerCase()}.png`}
-                        alt={lang.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
+                    <span
+                      className={`fi fi-${lang.code.split("-")[1]?.toLowerCase()} rounded-md flex-shrink-0`}
+                      style={{ width: "2rem", height: "1.5rem", backgroundSize: "cover", backgroundPosition: "center", display: "inline-block" }}
+                    />
                     <span className="text-[8px] sm:text-[9px] leading-tight text-center w-full truncate font-medium"
                       style={{ color: language === lang.code ? "#a5b4fc" : "rgba(255,255,255,0.35)" }}
                       dir={lang.rtl ? "rtl" : "ltr"}>
@@ -519,14 +515,10 @@ export default function AppPage() {
                         border: sel ? "1px solid rgba(16,185,129,0.45)" : "1px solid transparent",
                         WebkitTapHighlightColor: "transparent",
                       }}>
-                      <div className="w-8 h-6 rounded-md overflow-hidden flex-shrink-0 shadow-sm">
-                        <img
-                          src={`https://flagcdn.com/w40/${lang.code.split("-")[1]?.toLowerCase()}.png`}
-                          alt={lang.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
+                      <span
+                        className={`fi fi-${lang.code.split("-")[1]?.toLowerCase()} rounded-md flex-shrink-0`}
+                        style={{ width: "2rem", height: "1.5rem", backgroundSize: "cover", backgroundPosition: "center", display: "inline-block" }}
+                      />
                       <span className="text-[8px] sm:text-[9px] leading-tight text-center w-full truncate font-medium"
                         style={{ color: sel ? "#6ee7b7" : "rgba(255,255,255,0.35)" }}
                         dir={lang.rtl ? "rtl" : "ltr"}>
@@ -606,9 +598,10 @@ export default function AppPage() {
               <div className="flex items-center justify-between px-3.5 pt-3 pb-2.5"
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-6 h-4 rounded overflow-hidden flex-shrink-0">
-                    <img src={`https://flagcdn.com/w40/${isLang.code.split("-")[1]?.toLowerCase()}.png`} alt={isLang.name} className="w-full h-full object-cover" />
-                  </div>
+                  <span
+                    className={`fi fi-${isLang.code.split("-")[1]?.toLowerCase()} rounded flex-shrink-0`}
+                    style={{ width: "1.5rem", height: "1.1rem", backgroundSize: "cover", backgroundPosition: "center", display: "inline-block" }}
+                  />
                   <span className="text-[10px] font-bold text-white/45 uppercase tracking-wide truncate">{isLang.nativeName}</span>
                 </div>
                 <span className="text-[9px] text-white/20 flex-shrink-0 ml-2">Original</span>
@@ -662,9 +655,10 @@ export default function AppPage() {
                 <div className="flex items-center gap-2 min-w-0">
                   {translateTo !== "none" && rightPanelLang ? (
                     <>
-                      <div className="w-6 h-4 rounded overflow-hidden flex-shrink-0">
-                        <img src={`https://flagcdn.com/w40/${rightPanelLang.code.split("-")[1]?.toLowerCase()}.png`} alt={rightPanelLang.name} className="w-full h-full object-cover" />
-                      </div>
+                      <span
+                        className={`fi fi-${rightPanelLang.code.split("-")[1]?.toLowerCase()} rounded flex-shrink-0`}
+                        style={{ width: "1.5rem", height: "1.1rem", backgroundSize: "cover", backgroundPosition: "center", display: "inline-block" }}
+                      />
                       <span className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wide truncate">{rightPanelLang.nativeName}</span>
                     </>
                   ) : (
