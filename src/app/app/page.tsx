@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Mic, MicOff, Copy, Trash2, Settings, Clock, RotateCcw,
-  Check, Loader2, ArrowLeft, ChevronDown, Keyboard, Sparkles, X, Wand2, SpellCheck,
+  Mic, MicOff, Copy, Trash2, Settings, Clock,
+  Check, Loader2, ArrowLeft, ChevronDown, Keyboard, Sparkles, X, Wand2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -13,7 +13,6 @@ import { enhanceText } from "@/lib/enhance";
 import { HistoryPanel } from "@/components/HistoryPanel";
 import { ModeSelector } from "@/components/ModeSelector";
 import { EnhancementSlider } from "@/components/EnhancementSlider";
-import { LanguageSelector } from "@/components/LanguageSelector";
 import { RealWaveform } from "@/components/RealWaveform";
 import { getLang, LANGUAGES } from "@/lib/languages";
 import { injectTextAtCursor } from "@/hooks/useTextInjector";
@@ -27,7 +26,8 @@ export default function AppPage() {
   } = useVoiceStore();
 
   const [isEnhancing, setIsEnhancing] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedLeft, setCopiedLeft] = useState(false);
+  const [copiedRight, setCopiedRight] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<"enhanced" | "raw">("enhanced");
@@ -37,6 +37,7 @@ export default function AppPage() {
   const [showShortcutHint, setShowShortcutHint] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [translateTo, setTranslateTo] = useState("none");
+  const [translatedResult, setTranslatedResult] = useState("");
 
   const recognitionRef = useRef<any>(null);
   const accumulatedRef = useRef<string>("");
@@ -219,6 +220,7 @@ export default function AppPage() {
     const baseText = toLang !== "none"
       ? await translateText(text, languageRef.current, toLang)
       : text;
+    setTranslatedResult(toLang !== "none" ? baseText : "");
 
     if (enhanceLevel > 0 && enhanceMode !== "raw") {
       setIsEnhancing(true);
@@ -275,13 +277,21 @@ export default function AppPage() {
     return () => window.removeEventListener("keydown", handleF2);
   }, [toggleRecording]);
 
-  const handleCopy = async () => {
-    const text = activeTab === "enhanced" ? enhanced : transcript;
-    if (!text) return;
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
+  const copyLeft = async () => {
+    if (!transcript) return;
+    await navigator.clipboard.writeText(transcript).catch(() => {});
+    setCopiedLeft(true);
     toast.success("Copied!");
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopiedLeft(false), 2000);
+  };
+
+  const copyRight = async () => {
+    const text = translatedResult || enhanced;
+    if (!text) return;
+    await navigator.clipboard.writeText(text).catch(() => {});
+    setCopiedRight(true);
+    toast.success("Copied!");
+    setTimeout(() => setCopiedRight(false), 2000);
   };
 
   const handleReEnhance = async () => {
@@ -315,23 +325,36 @@ export default function AppPage() {
     }
   };
 
-  const activeText = activeTab === "enhanced" ? enhanced : transcript;
-  const displayText = isRecording ? liveText : activeText;
+  // Build unique translate-to language list (deduplicated by gtrans code)
+  const GTRANS: Record<string, string> = {
+    "en-US": "en", "en-GB": "en", "ur-PK": "ur", "ar-SA": "ar", "ar-AE": "ar",
+    "hi-IN": "hi", "es-ES": "es", "es-MX": "es", "fr-FR": "fr", "de-DE": "de",
+    "zh-CN": "zh-CN", "zh-TW": "zh-TW", "ja-JP": "ja", "ko-KR": "ko",
+    "ru-RU": "ru", "pt-BR": "pt", "it-IT": "it", "tr-TR": "tr", "fa-IR": "fa",
+    "bn-BD": "bn", "pa-IN": "pa", "ms-MY": "ms", "id-ID": "id", "nl-NL": "nl",
+  };
+  const seenGt = new Set<string>();
+  const translateLangs = LANGUAGES.filter((lang) => {
+    const gt = GTRANS[lang.code];
+    if (!gt || seenGt.has(gt)) return false;
+    seenGt.add(gt);
+    return true;
+  });
+
+  const rightPanelLang = translateTo !== "none"
+    ? translateLangs.find((l) => GTRANS[l.code] === translateTo)
+    : undefined;
+  const rightPanelText = translateTo !== "none" ? translatedResult : (enhanced || transcript);
 
   // ── Compact floating widget ──────────────────────────────────
   if (compact) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
         <div className="glass-strong rounded-3xl p-4 flex items-center gap-3 border border-white/10 shadow-2xl">
-          <motion.button
-            onClick={toggleRecording}
-            whileTap={{ scale: 0.9 }}
+          <motion.button onClick={toggleRecording} whileTap={{ scale: 0.9 }}
             className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${
-              isRecording
-                ? "bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]"
-                : "bg-brand-600 shadow-[0_0_20px_rgba(99,102,241,0.4)]"
-            }`}
-          >
+              isRecording ? "bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]" : "bg-brand-600 shadow-[0_0_20px_rgba(99,102,241,0.4)]"
+            }`}>
             {isRecording ? <MicOff size={22} /> : <Mic size={22} />}
           </motion.button>
           {isRecording && (
@@ -380,13 +403,7 @@ export default function AppPage() {
             <span className="text-sm font-semibold tracking-tight hidden xs:block">VoiceFlow</span>
           </div>
         </div>
-
         <div className="flex items-center gap-1 flex-shrink-0">
-          {/* current language badge */}
-          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl glass text-xs text-white/50">
-            <span>{isLang.flag}</span>
-            <span className="hidden sm:inline">{isLang.nativeName}</span>
-          </div>
           <button onClick={() => setShowHistory(!showHistory)}
             className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs transition-colors ${
               showHistory ? "bg-brand-600/30 text-brand-300" : "text-white/35 hover:text-white hover:bg-white/5"
@@ -419,31 +436,6 @@ export default function AppPage() {
             <div className="px-4 py-4 space-y-4">
               <ModeSelector mode={enhanceMode} onChange={setEnhanceMode} />
               <EnhancementSlider value={enhanceLevel} onChange={setEnhanceLevel} />
-              {/* Translate row */}
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-white/40 flex-shrink-0">Translate to</span>
-                <select
-                  value={translateTo}
-                  onChange={(e) => setTranslateTo(e.target.value)}
-                  className="flex-1 px-3 py-1.5 rounded-xl text-xs text-white outline-none"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
-                >
-                  <option value="none">Off (keep original)</option>
-                  <option value="en">🇺🇸 English</option>
-                  <option value="ur">🇵🇰 Urdu</option>
-                  <option value="ar">🇸🇦 Arabic</option>
-                  <option value="hi">🇮🇳 Hindi</option>
-                  <option value="es">🇪🇸 Spanish</option>
-                  <option value="fr">🇫🇷 French</option>
-                  <option value="de">🇩🇪 German</option>
-                  <option value="zh-CN">🇨🇳 Chinese</option>
-                  <option value="ja">🇯🇵 Japanese</option>
-                  <option value="ko">🇰🇷 Korean</option>
-                  <option value="ru">🇷🇺 Russian</option>
-                  <option value="tr">🇹🇷 Turkish</option>
-                  <option value="pt">🇧🇷 Portuguese</option>
-                </select>
-              </div>
               {!isMobile && (
                 <p className="text-xs text-white/25 flex items-center gap-1.5">
                   <Keyboard size={11} />
@@ -456,263 +448,264 @@ export default function AppPage() {
       </AnimatePresence>
 
       <div className="flex flex-1 overflow-hidden relative z-10 min-h-0">
+        <main className="flex-1 flex flex-col items-center px-3 py-4 overflow-y-auto">
 
-        {/* ── Main ── */}
-        <main className="flex-1 flex flex-col items-center justify-start sm:justify-center px-4 py-6 overflow-y-auto gap-0">
+          {/* ── Two-column language selectors ── */}
+          <div className="w-full max-w-2xl grid grid-cols-2 gap-3 mb-5">
 
-          {/* Shortcut hint — desktop only */}
-          <AnimatePresence>
-            {showShortcutHint && !isRecording && !isMobile && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex items-center gap-2 text-xs text-white/20 mb-6">
-                <Keyboard size={11} />
-                Press <kbd>F2</kbd> to start
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── Mic button ── */}
-          <div className="relative flex items-center justify-center mb-6">
-            {isRecording && [1, 2, 3].map((i) => (
-              <motion.div key={i} className="absolute rounded-full border border-brand-500/25"
-                animate={{ scale: [1, 1.8 + i * 0.3], opacity: [0.4, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.4, ease: "easeOut" }}
-                style={{ width: 96, height: 96 }} />
-            ))}
-
-            <motion.button onClick={toggleRecording}
-              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-              animate={isRecording
-                ? { boxShadow: ["0 0 40px rgba(239,68,68,0.4)", "0 0 70px rgba(239,68,68,0.7)", "0 0 40px rgba(239,68,68,0.4)"] }
-                : { boxShadow: ["0 0 30px rgba(99,102,241,0.3)", "0 0 50px rgba(99,102,241,0.5)", "0 0 30px rgba(99,102,241,0.3)"] }
-              }
-              transition={{ duration: 2, repeat: Infinity }}
-              className={`relative w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center transition-colors duration-300 touch-manipulation ${
-                isRecording ? "bg-red-500" : "bg-brand-600 active:bg-brand-500"
-              }`}
-              style={{ WebkitTapHighlightColor: "transparent" }}
-            >
-              <AnimatePresence mode="wait">
-                {isRecording
-                  ? <motion.div key="stop" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}><MicOff size={34} className="text-white" /></motion.div>
-                  : <motion.div key="start" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}><Mic size={34} className="text-white" /></motion.div>
-                }
-              </AnimatePresence>
-            </motion.button>
-          </div>
-
-          {/* Status */}
-          <div className="text-sm mb-5 flex items-center gap-2 h-6 px-2 text-center">
-            {isRecording ? (
-              <motion.span className="flex items-center gap-2 text-white/60"
-                animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
-                <span className="text-xs sm:text-sm">
-                  {isMobile ? `Listening in ${isLang.nativeName}...` : `Listening in ${isLang.nativeName} · tap to stop`}
-                </span>
-              </motion.span>
-            ) : isEnhancing ? (
-              <span className="flex items-center gap-2 text-brand-400 text-xs sm:text-sm">
-                <Loader2 size={13} className="animate-spin flex-shrink-0" />
-                Enhancing with AI...
-              </span>
-            ) : (
-              <span className="text-white/25 text-xs sm:text-sm">
-                {isMobile ? "Tap mic to start" : "Click mic or press F2"}
-              </span>
-            )}
-          </div>
-
-          {/* Waveform */}
-          <div className="mb-6 w-full max-w-xs sm:max-w-sm h-12 flex items-center justify-center">
-            <RealWaveform stream={audioStream} isActive={isRecording} bars={36} />
-          </div>
-
-          {/* ── Language Grid — all devices ── */}
-          <div className="w-full max-w-lg mb-3">
-            <p className="text-[11px] text-white/30 text-center mb-2.5">
-              {isRecording ? `🔴 Listening in ${isLang.flag} ${isLang.nativeName}` : "Select language · then press mic or F2"}
-            </p>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
-              {LANGUAGES.map((lang) => (
-                <button
-                  key={lang.code}
-                  onPointerDown={() => {
-                    setLanguage(lang.code);
-                    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                    if (isIOS && lang.code !== "en-US" && lang.code !== "en-GB") {
-                      toast(`${lang.flag} ${lang.nativeName} selected.\nIf it fails, add in iPhone Settings → General → Language & Region`, {
-                        icon: "ℹ️", duration: 4000,
-                        style: { fontSize: "11px", maxWidth: "300px", whiteSpace: "pre-line" },
-                      });
-                    } else {
-                      toast.success(`${lang.flag} ${lang.nativeName}`, { duration: 1200 });
-                    }
-                    if (isRecording) stopRecording();
-                  }}
-                  disabled={isRecording}
-                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded-2xl border transition-all active:scale-95 touch-manipulation hover:bg-white/5 ${
-                    language === lang.code
-                      ? "border-brand-500/60 bg-brand-600/25"
-                      : "border-white/6 bg-white/[0.02]"
-                  }`}
-                  style={{ WebkitTapHighlightColor: "transparent" }}
-                >
-                  <span className="text-xl leading-none">{lang.flag}</span>
-                  <span
-                    className={`text-[9px] leading-tight text-center w-full truncate px-0.5 ${
-                      language === lang.code ? "text-brand-300 font-semibold" : "text-white/40"
+            {/* Left — Speak In */}
+            <div>
+              <div className="flex items-center justify-between mb-2 px-0.5">
+                <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">Speak In</p>
+                <span className="text-[10px] text-brand-300">{isLang.flag} {isLang.nativeName}</span>
+              </div>
+              <div className="rounded-2xl p-2 grid grid-cols-3 sm:grid-cols-4 gap-1.5"
+                style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                {LANGUAGES.map((lang) => (
+                  <button key={lang.code}
+                    onPointerDown={() => {
+                      setLanguage(lang.code);
+                      if (isRecording) stopRecording();
+                      toast.success(`${lang.flag} ${lang.nativeName}`, { duration: 900 });
+                    }}
+                    disabled={isRecording}
+                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all active:scale-95 touch-manipulation ${
+                      language === lang.code
+                        ? "border-brand-500/60 bg-brand-600/25"
+                        : "border-transparent hover:border-white/10 hover:bg-white/5"
                     }`}
-                    dir={lang.rtl ? "rtl" : "ltr"}
-                    style={{ fontFamily: lang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}
-                  >
-                    {lang.nativeName}
-                  </span>
+                    style={{ WebkitTapHighlightColor: "transparent" }}>
+                    <span className="text-lg sm:text-xl leading-none">{lang.flag}</span>
+                    <span
+                      className={`text-[8px] sm:text-[9px] leading-tight text-center w-full truncate ${
+                        language === lang.code ? "text-brand-300 font-semibold" : "text-white/35"
+                      }`}
+                      dir={lang.rtl ? "rtl" : "ltr"}>
+                      {lang.nativeName}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — Translate To */}
+            <div>
+              <div className="flex items-center justify-between mb-2 px-0.5">
+                <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">Translate To</p>
+                <span className="text-[10px] text-emerald-400">
+                  {translateTo === "none" ? "Off" : `${rightPanelLang?.flag ?? ""} ${rightPanelLang?.nativeName ?? ""}`}
+                </span>
+              </div>
+              <div className="rounded-2xl p-2 grid grid-cols-3 sm:grid-cols-4 gap-1.5"
+                style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                {/* None */}
+                <button
+                  onPointerDown={() => setTranslateTo("none")}
+                  className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all active:scale-95 touch-manipulation ${
+                    translateTo === "none" ? "border-white/25 bg-white/8" : "border-transparent hover:border-white/10 hover:bg-white/5"
+                  }`}
+                  style={{ WebkitTapHighlightColor: "transparent" }}>
+                  <span className="text-lg sm:text-xl leading-none">🚫</span>
+                  <span className={`text-[8px] sm:text-[9px] ${translateTo === "none" ? "text-white/60 font-semibold" : "text-white/30"}`}>None</span>
                 </button>
-              ))}
+                {translateLangs.map((lang) => {
+                  const gt = GTRANS[lang.code];
+                  const sel = translateTo === gt;
+                  return (
+                    <button key={lang.code}
+                      onPointerDown={() => setTranslateTo(gt)}
+                      className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all active:scale-95 touch-manipulation ${
+                        sel ? "border-emerald-500/60 bg-emerald-600/20" : "border-transparent hover:border-white/10 hover:bg-white/5"
+                      }`}
+                      style={{ WebkitTapHighlightColor: "transparent" }}>
+                      <span className="text-lg sm:text-xl leading-none">{lang.flag}</span>
+                      <span
+                        className={`text-[8px] sm:text-[9px] leading-tight text-center w-full truncate ${
+                          sel ? "text-emerald-300 font-semibold" : "text-white/35"
+                        }`}
+                        dir={lang.rtl ? "rtl" : "ltr"}>
+                        {lang.nativeName}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* AI mode + translate settings toggle */}
-          <div className="w-full max-w-lg mb-3">
-            <button onClick={() => setShowSettings(!showSettings)}
-              className="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl text-sm text-white/40 transition-colors hover:bg-white/5 active:bg-white/5"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <span className="flex items-center gap-2">
-                <Settings size={14} />
-                {enhanceMode.charAt(0).toUpperCase() + enhanceMode.slice(1)} mode · {
-                  enhanceLevel === 0 ? "No AI" : enhanceLevel < 40 ? "Light" : enhanceLevel < 75 ? "Balanced" : "Full"
+          {/* ── Mic button + status ── */}
+          <div className="flex flex-col items-center mb-5">
+            <div className="relative flex items-center justify-center mb-3">
+              {isRecording && [1, 2, 3].map((i) => (
+                <motion.div key={i} className="absolute rounded-full border border-brand-500/20"
+                  animate={{ scale: [1, 1.9 + i * 0.3], opacity: [0.35, 0] }}
+                  transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.4, ease: "easeOut" }}
+                  style={{ width: 80, height: 80 }} />
+              ))}
+              <motion.button onClick={toggleRecording}
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                animate={isRecording
+                  ? { boxShadow: ["0 0 30px rgba(239,68,68,0.4)", "0 0 55px rgba(239,68,68,0.7)", "0 0 30px rgba(239,68,68,0.4)"] }
+                  : { boxShadow: ["0 0 25px rgba(99,102,241,0.3)", "0 0 45px rgba(99,102,241,0.5)", "0 0 25px rgba(99,102,241,0.3)"] }
                 }
-                {translateTo !== "none" && <span className="text-brand-400 text-xs">· Translating</span>}
-              </span>
-              <ChevronDown size={14} className={showSettings ? "rotate-180" : ""} />
-            </button>
+                transition={{ duration: 2, repeat: Infinity }}
+                className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-colors duration-300 touch-manipulation ${
+                  isRecording ? "bg-red-500" : "bg-brand-600 active:bg-brand-500"
+                }`}
+                style={{ WebkitTapHighlightColor: "transparent" }}>
+                <AnimatePresence mode="wait">
+                  {isRecording
+                    ? <motion.div key="stop" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}><MicOff size={28} className="text-white" /></motion.div>
+                    : <motion.div key="start" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}><Mic size={28} className="text-white" /></motion.div>
+                  }
+                </AnimatePresence>
+              </motion.button>
+            </div>
+
+            <div className="flex items-center gap-2 h-5">
+              {isRecording ? (
+                <motion.span className="flex items-center gap-2 text-white/60"
+                  animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                  <span className="text-xs">Listening · tap to stop</span>
+                </motion.span>
+              ) : isEnhancing ? (
+                <span className="flex items-center gap-2 text-brand-400 text-xs">
+                  <Loader2 size={12} className="animate-spin flex-shrink-0" />
+                  Enhancing...
+                </span>
+              ) : (
+                <span className="text-white/25 text-xs">
+                  {isMobile ? "Tap mic to start" : "Click mic or press F2"}
+                </span>
+              )}
+            </div>
+
+            {isRecording && (
+              <div className="mt-2 w-40 h-7">
+                <RealWaveform stream={audioStream} isActive={isRecording} bars={24} />
+              </div>
+            )}
           </div>
 
-          {/* ── Text panel ── */}
-          <AnimatePresence mode="wait">
-            {(isRecording && liveText) || (!isRecording && (transcript || enhanced)) ? (
-              <motion.div key="result"
-                initial={{ opacity: 0, y: 16, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 16 }}
-                className="w-full max-w-sm sm:max-w-xl">
+          {/* ── Two text output panels ── */}
+          <div className="w-full max-w-2xl grid grid-cols-2 gap-3 mb-4">
 
-                {/* Tabs */}
-                {!isRecording && enhanced && (
-                  <div className="flex items-center gap-1 mb-3 p-1 rounded-xl w-fit"
-                    style={{ background: "rgba(255,255,255,0.04)" }}>
-                    <button onClick={() => setActiveTab("enhanced")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        activeTab === "enhanced" ? "bg-brand-600 text-white" : "text-white/35 hover:text-white"
-                      }`}>
-                      <span className="flex items-center gap-1"><Sparkles size={10} /> Enhanced</span>
-                    </button>
-                    <button onClick={() => setActiveTab("raw")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        activeTab === "raw" ? "bg-white/10 text-white" : "text-white/35 hover:text-white"
-                      }`}>Raw</button>
-                  </div>
+            {/* Left — Original speech */}
+            <div className="flex flex-col rounded-2xl overflow-hidden"
+              style={{ background: "rgba(255,255,255,0.03)", border: isRecording ? "1px solid rgba(99,102,241,0.25)" : "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-white/[0.05]">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">{isLang.flag}</span>
+                  <span className="text-[10px] font-semibold text-white/40 uppercase tracking-wide truncate max-w-[70px]">{isLang.nativeName}</span>
+                </div>
+                <span className="text-[9px] text-white/20">Original</span>
+              </div>
+              <div className="flex-1 px-3 py-2.5 min-h-[90px]">
+                {isRecording ? (
+                  <p className="text-white/75 text-sm leading-relaxed"
+                    dir={isLang.rtl ? "rtl" : "ltr"}
+                    style={{ fontFamily: isLang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}>
+                    {liveText}
+                    <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ duration: 0.8, repeat: Infinity }}
+                      className="inline-block w-0.5 h-3.5 bg-brand-400 ml-0.5 align-middle" />
+                  </p>
+                ) : transcript ? (
+                  <p className="text-white/75 text-sm leading-relaxed"
+                    dir={isLang.rtl ? "rtl" : "ltr"}
+                    style={{ fontFamily: isLang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}>
+                    {transcript}
+                  </p>
+                ) : (
+                  <p className="text-white/20 text-xs italic">Your speech appears here...</p>
                 )}
+              </div>
+              {transcript && !isRecording && (
+                <div className="px-3 pb-3 pt-1 flex items-center gap-2">
+                  <button onClick={copyLeft}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 touch-manipulation"
+                    style={{
+                      background: copiedLeft ? "rgba(16,185,129,0.15)" : "rgba(99,102,241,0.15)",
+                      border: copiedLeft ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(99,102,241,0.25)",
+                      color: copiedLeft ? "#6ee7b7" : "#a5b4fc",
+                    }}>
+                    {copiedLeft ? <Check size={11} /> : <Copy size={11} />}
+                    {copiedLeft ? "Copied!" : "Copy"}
+                  </button>
+                  <button onClick={clearCurrent}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-white/25 hover:text-red-400 transition-colors touch-manipulation"
+                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <Trash2 size={11} /> Clear
+                  </button>
+                </div>
+              )}
+            </div>
 
-                {/* Text box */}
-                <div className="rounded-2xl p-4 sm:p-5 relative overflow-hidden"
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: isRecording ? "1px solid rgba(99,102,241,0.3)" : "1px solid rgba(255,255,255,0.06)",
-                  }}>
-                  {isEnhancing ? (
-                    <div className="flex items-center gap-3 text-white/35 py-3">
-                      <Loader2 size={16} className="animate-spin text-brand-400 flex-shrink-0" />
-                      <span className="text-sm">AI is polishing your text...</span>
-                    </div>
+            {/* Right — Translation / Enhanced */}
+            <div className="flex flex-col rounded-2xl overflow-hidden"
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-white/[0.05]">
+                <div className="flex items-center gap-1.5">
+                  {translateTo !== "none" && rightPanelLang ? (
+                    <>
+                      <span className="text-sm">{rightPanelLang.flag}</span>
+                      <span className="text-[10px] font-semibold text-emerald-400/80 uppercase tracking-wide truncate max-w-[70px]">{rightPanelLang.nativeName}</span>
+                    </>
                   ) : (
                     <>
-                      <p className="text-white/80 text-sm leading-relaxed min-h-[60px] whitespace-pre-wrap break-words"
-                        dir={isLang.rtl ? "rtl" : "ltr"}
-                        style={{ fontFamily: isLang.rtl ? "'Noto Naskh Arabic', 'Noto Sans Arabic', sans-serif" : undefined }}>
-                        {isRecording ? (
-                          <>{liveText}
-                            <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ duration: 0.8, repeat: Infinity }}
-                              className="inline-block w-0.5 h-4 bg-brand-400 ml-0.5 align-middle" />
-                          </>
-                        ) : (
-                          displayText || <span className="text-white/20 italic">Your text will appear here...</span>
-                        )}
-                      </p>
-                      {!isRecording && activeText && (
-                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5 flex-wrap">
-                          <span className="text-[10px] text-white/20 bg-white/5 px-2 py-0.5 rounded-full capitalize">{enhanceMode}</span>
-                          <span className="text-[10px] text-white/20">{isLang.flag} {isLang.nativeName}</span>
-                        </div>
-                      )}
+                      <Sparkles size={10} className="text-brand-400" />
+                      <span className="text-[10px] font-semibold text-white/40 uppercase tracking-wide">Enhanced</span>
                     </>
                   )}
                 </div>
-
-                {/* Actions */}
-                {!isRecording && activeText && !isEnhancing && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="flex items-center gap-2 mt-3 flex-wrap">
-                    <button onClick={handleCopy}
-                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-600 active:bg-brand-500 text-xs font-medium transition-colors touch-manipulation"
-                      style={{ WebkitTapHighlightColor: "transparent" }}>
-                      {copied ? <Check size={13} /> : <Copy size={13} />}
-                      {copied ? "Copied!" : "Copy"}
-                    </button>
-                    <button onClick={handleFix} disabled={!activeText || isEnhancing}
-                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs text-white/45 active:text-white transition-colors disabled:opacity-30 touch-manipulation"
-                      style={{ background: "rgba(255,255,255,0.04)", WebkitTapHighlightColor: "transparent" }}>
-                      <SpellCheck size={12} /> Fix
-                    </button>
-                    <button onClick={handleReEnhance} disabled={!transcript || isEnhancing}
-                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs text-white/45 active:text-white transition-colors disabled:opacity-30 touch-manipulation"
-                      style={{ background: "rgba(255,255,255,0.04)", WebkitTapHighlightColor: "transparent" }}>
-                      <Wand2 size={12} /> Enhance
-                    </button>
-                    <button onClick={clearCurrent}
-                      className="ml-auto flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs text-white/30 active:text-red-400 transition-colors touch-manipulation"
-                      style={{ background: "rgba(255,255,255,0.04)", WebkitTapHighlightColor: "transparent" }}>
-                      <Trash2 size={12} /> Clear
-                    </button>
-                  </motion.div>
-                )}
-              </motion.div>
-            ) : (
-              /* Empty state */
-              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="text-center w-full max-w-xs sm:max-w-sm px-2">
-                {!isMobile && (
-                  <div className="grid grid-cols-2 gap-2 mb-5">
-                    {[
-                      { emoji: "📧", label: "Email drafts" },
-                      { emoji: "💬", label: "Slack messages" },
-                      { emoji: "📝", label: "Notes & docs" },
-                      { emoji: "💻", label: "Code comments" },
-                    ].map((tip) => (
-                      <div key={tip.label}
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-white/30"
-                        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                        <span>{tip.emoji}</span>{tip.label}
-                      </div>
-                    ))}
+                <span className="text-[9px] text-white/20">
+                  {translateTo !== "none" ? "Translation" : "AI Output"}
+                </span>
+              </div>
+              <div className="flex-1 px-3 py-2.5 min-h-[90px]">
+                {isEnhancing ? (
+                  <div className="flex items-center gap-2 text-brand-400 text-xs">
+                    <Loader2 size={11} className="animate-spin" /> Processing...
                   </div>
+                ) : rightPanelText ? (
+                  <p className="text-white/75 text-sm leading-relaxed"
+                    dir={rightPanelLang?.rtl ? "rtl" : "ltr"}
+                    style={{ fontFamily: rightPanelLang?.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}>
+                    {rightPanelText}
+                  </p>
+                ) : (
+                  <p className="text-white/20 text-xs italic">
+                    {translateTo !== "none" ? "Translation appears here..." : "Enhanced text appears here..."}
+                  </p>
                 )}
-                <p className="text-xs text-white/20 leading-relaxed">
-                  {isMobile
-                    ? `Select a language above · tap mic · AI enhances · auto-copies`
-                    : "Speak · AI enhances · auto-copies · paste with Ctrl+V"
-                  }
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+              {rightPanelText && !isRecording && !isEnhancing && (
+                <div className="px-3 pb-3 pt-1 flex items-center gap-2">
+                  <button onClick={copyRight}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 touch-manipulation"
+                    style={{
+                      background: copiedRight ? "rgba(16,185,129,0.15)" : "rgba(16,185,129,0.12)",
+                      border: copiedRight ? "1px solid rgba(16,185,129,0.35)" : "1px solid rgba(16,185,129,0.2)",
+                      color: copiedRight ? "#6ee7b7" : "#a7f3d0",
+                    }}>
+                    {copiedRight ? <Check size={11} /> : <Copy size={11} />}
+                    {copiedRight ? "Copied!" : "Copy"}
+                  </button>
+                  {transcript && (
+                    <button onClick={handleReEnhance} disabled={isEnhancing}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-white/30 hover:text-white/60 transition-colors disabled:opacity-30 touch-manipulation"
+                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <Wand2 size={11} /> Enhance
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
-          {/* Bottom padding for mobile safe area */}
-          <div className="h-6 flex-shrink-0" />
+          <div className="h-16 flex-shrink-0" />
         </main>
 
-        {/* History panel */}
         <AnimatePresence>
           {showHistory && (
             <HistoryPanel history={history} onClose={() => setShowHistory(false)} />
@@ -720,10 +713,9 @@ export default function AppPage() {
         </AnimatePresence>
       </div>
 
-      {/* Floating F2 shortcut badge — desktop only */}
+      {/* Floating F2 badge — desktop only */}
       {!isMobile && (
-        <motion.button
-          onClick={toggleRecording}
+        <motion.button onClick={toggleRecording}
           whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
           className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-2xl select-none"
           style={{
@@ -731,12 +723,9 @@ export default function AppPage() {
             border: isRecording ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(99,102,241,0.25)",
             backdropFilter: "blur(12px)",
             boxShadow: isRecording ? "0 0 20px rgba(239,68,68,0.2)" : "0 0 20px rgba(99,102,241,0.15)",
-          }}
-        >
+          }}>
           <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRecording ? "bg-red-400 animate-pulse" : "bg-brand-400"}`} />
-          <span className="text-xs text-white/60 font-medium">
-            {isRecording ? "Recording..." : "Press"}
-          </span>
+          <span className="text-xs text-white/60 font-medium">{isRecording ? "Recording..." : "Press"}</span>
           <kbd className="text-xs font-bold px-1.5 py-0.5 rounded-md"
             style={{ background: "rgba(255,255,255,0.1)", color: isRecording ? "#f87171" : "#a5b4fc", border: "1px solid rgba(255,255,255,0.12)" }}>
             F2
