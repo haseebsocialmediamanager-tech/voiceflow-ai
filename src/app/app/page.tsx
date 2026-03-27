@@ -15,7 +15,7 @@ import { ModeSelector } from "@/components/ModeSelector";
 import { EnhancementSlider } from "@/components/EnhancementSlider";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { RealWaveform } from "@/components/RealWaveform";
-import { getLang } from "@/lib/languages";
+import { getLang, LANGUAGES } from "@/lib/languages";
 import { useDoubleKey } from "@/hooks/useDoubleKey";
 import { injectTextAtCursor } from "@/hooks/useTextInjector";
 
@@ -453,11 +453,50 @@ export default function AppPage() {
             <RealWaveform stream={audioStream} isActive={isRecording} bars={36} />
           </div>
 
+          {/* ── Mobile Language Grid — always visible, no dropdown ── */}
+          {isMobile && (
+            <div className="w-full max-w-sm mb-3">
+              <p className="text-[11px] text-white/30 text-center mb-2.5">
+                {isRecording ? `🔴 Listening in ${isLang.flag} ${isLang.nativeName}` : "Tap your language, then tap the mic"}
+              </p>
+              <div className="grid grid-cols-4 gap-1.5">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onPointerDown={() => {
+                      setLanguage(lang.code);
+                      toast.success(`${lang.flag} ${lang.nativeName}`, { duration: 1200 });
+                      if (isRecording) stopRecording();
+                    }}
+                    disabled={isRecording}
+                    className={`flex flex-col items-center gap-1 py-2 px-1 rounded-2xl border transition-all active:scale-95 touch-manipulation ${
+                      language === lang.code
+                        ? "border-brand-500/60 bg-brand-600/25"
+                        : "border-white/6 bg-white/[0.02] active:bg-white/5"
+                    }`}
+                    style={{ WebkitTapHighlightColor: "transparent" }}
+                  >
+                    <span className="text-xl leading-none">{lang.flag}</span>
+                    <span
+                      className={`text-[9px] leading-tight text-center w-full truncate px-0.5 ${
+                        language === lang.code ? "text-brand-300 font-semibold" : "text-white/40"
+                      }`}
+                      dir={lang.rtl ? "rtl" : "ltr"}
+                      style={{ fontFamily: lang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}
+                    >
+                      {lang.nativeName}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Mode + settings shortcut on mobile */}
           {isMobile && (
-            <div className="w-full max-w-sm mb-4">
+            <div className="w-full max-w-sm mb-3">
               <button onClick={() => setShowSettings(!showSettings)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm text-white/40 transition-colors active:bg-white/5"
+                className="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl text-sm text-white/40 transition-colors active:bg-white/5"
                 style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <span className="flex items-center gap-2">
                   <Settings size={14} />
@@ -563,23 +602,25 @@ export default function AppPage() {
               /* Empty state */
               <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="text-center w-full max-w-xs sm:max-w-sm px-2">
-                <div className="grid grid-cols-2 gap-2 mb-5">
-                  {[
-                    { emoji: "📧", label: "Email drafts" },
-                    { emoji: "💬", label: "Slack messages" },
-                    { emoji: "📝", label: "Notes & docs" },
-                    { emoji: "💻", label: "Code comments" },
-                  ].map((tip) => (
-                    <div key={tip.label}
-                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-white/30"
-                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                      <span>{tip.emoji}</span>{tip.label}
-                    </div>
-                  ))}
-                </div>
+                {!isMobile && (
+                  <div className="grid grid-cols-2 gap-2 mb-5">
+                    {[
+                      { emoji: "📧", label: "Email drafts" },
+                      { emoji: "💬", label: "Slack messages" },
+                      { emoji: "📝", label: "Notes & docs" },
+                      { emoji: "💻", label: "Code comments" },
+                    ].map((tip) => (
+                      <div key={tip.label}
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-white/30"
+                        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <span>{tip.emoji}</span>{tip.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <p className="text-xs text-white/20 leading-relaxed">
                   {isMobile
-                    ? "Tap the mic · AI enhances · auto-copies to clipboard"
+                    ? `Select a language above · tap mic · AI enhances · auto-copies`
                     : "Speak · AI enhances · auto-copies · paste with Ctrl+V"
                   }
                 </p>
