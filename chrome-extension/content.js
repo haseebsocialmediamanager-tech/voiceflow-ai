@@ -507,12 +507,16 @@
 
       if (el.isContentEditable) {
         el.focus();
-        // execCommand is the most compatible way to inject into React/Vue/Angular fields
-        // (LinkedIn, Facebook, Gmail, WhatsApp Web all use contentEditable)
-        const inserted = document.execCommand('insertText', false, text);
-        if (inserted) return true;
 
-        // Fallback for browsers where execCommand is not supported
+        // Primary: execCommand works on LinkedIn, Facebook, Gmail, Docs
+        const inserted = document.execCommand('insertText', false, text);
+        if (inserted) {
+          // Also fire InputEvent so React/WhatsApp state updates
+          el.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, inputType: 'insertText', data: text }));
+          return true;
+        }
+
+        // Fallback: manual DOM insertion + dispatch for apps where execCommand fails
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0) {
           const range = sel.getRangeAt(0);
@@ -523,9 +527,22 @@
           range.setEndAfter(node);
           sel.removeAllRanges();
           sel.addRange(range);
-          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, inputType: 'insertText', data: text }));
           return true;
         }
+
+        // Last resort for WhatsApp Web — set innerText and fire events
+        const prev = el.innerText;
+        el.innerText = prev + text;
+        el.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, inputType: 'insertText', data: text }));
+        // Move caret to end
+        const s2 = window.getSelection();
+        const r2 = document.createRange();
+        r2.selectNodeContents(el);
+        r2.collapse(false);
+        s2?.removeAllRanges();
+        s2?.addRange(r2);
+        return true;
       }
     } catch {}
     return false;

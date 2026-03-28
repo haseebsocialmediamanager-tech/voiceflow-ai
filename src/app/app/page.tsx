@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import { useVoiceStore } from "@/lib/store";
 import { enhanceText } from "@/lib/enhance";
 import { HistoryPanel } from "@/components/HistoryPanel";
@@ -18,6 +20,8 @@ import { getLang, LANGUAGES } from "@/lib/languages";
 import { injectTextAtCursor } from "@/hooks/useTextInjector";
 
 export default function AppPage() {
+  const router = useRouter();
+
   const {
     isRecording, transcript, enhanced, enhanceMode, enhanceLevel,
     language, history,
@@ -30,12 +34,11 @@ export default function AppPage() {
   const [copiedRight, setCopiedRight] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [activeTab, setActiveTab] = useState<"enhanced" | "raw">("enhanced");
   const [liveText, setLiveText] = useState("");
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
   const [compact, setCompact] = useState(false);
-  const [showShortcutHint, setShowShortcutHint] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [translateTo, setTranslateTo] = useState("none");
   const [translatedResult, setTranslatedResult] = useState("");
 
@@ -47,6 +50,17 @@ export default function AppPage() {
   const isLang = getLang(language);
 
   useEffect(() => { translateToRef.current = translateTo; }, [translateTo]);
+
+  // ── Auth guard — redirect to login if no session ─────────────
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        router.replace("/login");
+      } else {
+        setAuthChecked(true);
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Free Google Translate (no API key needed)
   const translateText = useCallback(async (text: string, fromLang: string, toLang: string): Promise<string> => {
@@ -186,12 +200,10 @@ export default function AppPage() {
     setLiveText("");
     setTranscript("");
     setEnhanced("");
-    setActiveTab("enhanced");
 
     try {
       r.start();
       setRecording(true);
-      setShowShortcutHint(false);
     } catch (e) {
       toast.error("Could not start recording. Try again.");
     }
@@ -227,8 +239,7 @@ export default function AppPage() {
       try {
         const result = await enhanceText(baseText, enhanceMode, enhanceLevel, language);
         setEnhanced(result);
-        setActiveTab("enhanced");
-
+  
         const mode = injectTextAtCursor(result);
         if (mode === "injected") {
           toast.success("Injected at cursor!", { icon: "✍️" });
@@ -300,26 +311,9 @@ export default function AppPage() {
     try {
       const result = await enhanceText(transcript, enhanceMode, enhanceLevel, language);
       setEnhanced(result);
-      setActiveTab("enhanced");
       toast.success("Re-enhanced!");
     } catch {
       toast.error("Enhancement failed");
-    } finally {
-      setIsEnhancing(false);
-    }
-  };
-
-  const handleFix = async () => {
-    const text = activeTab === "enhanced" ? enhanced : transcript;
-    if (!text) return;
-    setIsEnhancing(true);
-    try {
-      const result = await enhanceText(text, "fix" as any, 100, language);
-      setEnhanced(result);
-      setActiveTab("enhanced");
-      toast.success("Spelling & grammar fixed!");
-    } catch {
-      toast.error("Fix failed");
     } finally {
       setIsEnhancing(false);
     }
@@ -347,6 +341,9 @@ export default function AppPage() {
   const rightPanelText = translateTo !== "none" ? translatedResult : (enhanced || transcript);
 
   // ── Compact floating widget ──────────────────────────────────
+  // Show nothing while checking auth (avoids flash of protected content)
+  if (!authChecked) return null;
+
   if (compact) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
