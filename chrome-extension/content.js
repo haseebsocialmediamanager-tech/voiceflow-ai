@@ -416,12 +416,27 @@
     };
 
     recognition.onerror = (ev) => {
+      isRecording = false;
+      fab.className = 'idle';
+      fab.innerHTML = micSVG(24);
+      wave.style.display = 'none';
+      hud.style.display = 'none';
+
       if (ev.error === 'not-allowed') {
-        setStatus('❌ Microphone blocked — allow it in browser settings');
+        showAlert('❌ Microphone blocked\n\nOpen Chrome Settings → Privacy → Site Settings → Microphone\nand allow this site. Then press F2 again.');
+        setStatus('❌ Microphone blocked — see alert for fix');
         showBrowserMicTip();
       } else if (ev.error === 'service-not-allowed') {
-        setStatus('❌ Language blocked by browser — try English or switch to Chrome');
+        showAlert('❌ Speech service blocked\n\nMake sure Chrome can reach the internet (Google speech servers).\nTry disabling VPN or firewall, then press F2 again.');
+        setStatus('❌ Speech service not allowed');
+      } else if (ev.error === 'network') {
+        showAlert('❌ Network error\n\nChrome needs internet access to process speech.\nCheck your connection or VPN, then press F2 again.');
+        setStatus('❌ Network error — check connection');
+      } else if (ev.error === 'audio-capture') {
+        showAlert('❌ No microphone found\n\nMake sure a microphone is plugged in and set as default in Windows Sound Settings.');
+        setStatus('❌ No microphone detected');
       } else if (ev.error !== 'no-speech' && ev.error !== 'aborted') {
+        showAlert('❌ Error: ' + ev.error + '\n\nTry pressing F2 again. If it keeps failing, reload the page.');
         setStatus('Error: ' + ev.error);
       }
     };
@@ -692,6 +707,19 @@
     } catch { return text; }
   }
 
+
+  /* ── Visible error alert (works in inline mode too) ─────── */
+  function showAlert(msg) {
+    const existing = document.getElementById('vf-alert');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.id = 'vf-alert';
+    el.style.cssText = 'all:initial;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:2147483647;background:rgba(15,15,25,0.97);border:1px solid rgba(239,68,68,0.5);border-radius:16px;padding:16px 20px;max-width:min(380px,calc(100vw - 32px));font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;color:rgba(255,255,255,0.85);line-height:1.55;white-space:pre-wrap;box-shadow:0 8px 40px rgba(0,0,0,0.7);backdrop-filter:blur(20px);cursor:pointer;';
+    el.textContent = msg + '\n\n(tap to dismiss)';
+    el.addEventListener('click', () => el.remove());
+    document.body.appendChild(el);
+    setTimeout(() => { if (document.getElementById('vf-alert') === el) el.remove(); }, 12000);
+  }
 
   /* ── Mic blocked tip ─────────────────────────────────────── */
   function showBrowserMicTip() {
