@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Mic, Shield, Zap, Brain, Code2, Globe, Check, ArrowRight,
-  History, WifiOff, Languages, Pause, Star, X, ChevronDown,
+  History, WifiOff, Languages, Pause, Star, X, ChevronDown, Download,
 } from "lucide-react";
 import { AnimatedHero } from "@/components/AnimatedHero";
 import { FlowForSection } from "@/components/FlowForSection";
@@ -348,6 +348,68 @@ export default function LandingPage() {
             <span className="text-xs sm:text-sm text-brand-300 font-medium">More Languages</span>
           </motion.button>
         </div>
+      </section>
+
+      {/* Install Extension CTA */}
+      <section className="relative z-10 px-4 sm:px-6 py-16 sm:py-20 max-w-5xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="relative rounded-3xl p-8 sm:p-12 overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(139,92,246,0.06) 100%)",
+            border: "1px solid rgba(99,102,241,0.2)",
+          }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            {/* Left */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs text-brand-300 mb-5 border border-brand-500/20">
+                <Globe size={12} />
+                Chrome Extension — Free
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3">
+                Dictate in{" "}
+                <span className="gradient-text">any text box</span>
+              </h2>
+              <p className="text-white/50 text-base mb-6 leading-relaxed">
+                Install the extension and press <kbd>F2</kbd> to start/stop recording on Gmail, WhatsApp Web, Facebook, LinkedIn — everywhere on the web.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="/voiceflow-extension.zip"
+                  download="voiceflow-extension.zip"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", boxShadow: "0 0 24px rgba(99,102,241,0.4)" }}
+                >
+                  <Download size={15} />
+                  Download Extension
+                </a>
+                <Link href="/install"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm glass hover:bg-white/5 text-white/60 hover:text-white transition-colors">
+                  View Install Guide →
+                </Link>
+              </div>
+            </div>
+
+            {/* Right — steps */}
+            <div className="space-y-3">
+              {[
+                { step: "1", text: "Download and unzip the extension file" },
+                { step: "2", text: "Open chrome://extensions in Chrome" },
+                { step: "3", text: 'Enable "Developer mode" (top-right toggle)' },
+                { step: "4", text: 'Click "Load unpacked" → select the unzipped folder' },
+                { step: "5", text: "Press F2 on any page to start dictating" },
+              ].map(({ step, text }) => (
+                <div key={step} className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div className="w-7 h-7 rounded-full bg-brand-600/40 flex items-center justify-center text-xs font-bold text-brand-300 flex-shrink-0">
+                    {step}
+                  </div>
+                  <span className="text-sm text-white/65">{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* Compare */}

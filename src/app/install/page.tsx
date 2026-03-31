@@ -1,13 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mic, BookmarkIcon, Chrome, Smartphone, Monitor, Check } from "lucide-react";
+import { Mic, Smartphone, Monitor, Check, Download, FolderOpen, ToggleLeft, Puzzle } from "lucide-react";
 import Link from "next/link";
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.linkedwin.io";
-
-// The bookmarklet code — loads the widget script from our server
-const BOOKMARKLET = `javascript:(function(){var s=document.createElement('script');s.src='${APP_URL}/voiceflow-widget.js?v='+Date.now();document.head.appendChild(s);})();`;
 
 export default function InstallPage() {
   return (
@@ -26,83 +21,119 @@ export default function InstallPage() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-            Use VoiceFlow{" "}
+            Install VoiceFlow{" "}
             <span className="gradient-text">everywhere</span>
           </h1>
           <p className="text-white/50 text-lg mb-10">
-            One click to activate on Facebook, Gmail, Twitter, WhatsApp Web — any website.
+            Use voice dictation in any text box on any website — Gmail, WhatsApp, Facebook, LinkedIn and more.
           </p>
 
-          {/* Step 1 — Bookmarklet */}
-          <div className="glass rounded-2xl p-6 mb-4 border border-white/6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-sm font-bold">1</div>
-              <h2 className="font-semibold text-lg">Drag this button to your bookmarks bar</h2>
+          {/* Chrome Extension — Primary */}
+          <div className="rounded-2xl p-6 mb-4 border border-brand-500/30" style={{ background: "rgba(99,102,241,0.08)" }}>
+            <div className="flex items-center gap-3 mb-2">
+              <Download size={22} className="text-brand-400" />
+              <h2 className="font-bold text-xl">Chrome Extension</h2>
+              <span className="ml-auto text-xs text-brand-300 bg-brand-500/20 px-2 py-0.5 rounded-full">Recommended</span>
             </div>
-
-            <p className="text-white/40 text-sm mb-5">
-              Drag the purple button below to your browser's bookmarks/favorites bar.
-              If you don't see the bar: press <kbd>Ctrl+Shift+B</kbd> (Windows) or <kbd>Cmd+Shift+B</kbd> (Mac).
+            <p className="text-white/50 text-sm mb-5">
+              Works on Chrome, Brave, Edge, Opera. Press <kbd>F2</kbd> anywhere to start/stop recording.
             </p>
 
-            {/* The draggable bookmarklet */}
-            <div className="flex items-center gap-4 flex-wrap">
-              <a
-                href={BOOKMARKLET}
-                onClick={(e) => { e.preventDefault(); alert('Drag this button to your bookmarks bar — don\'t click it here!'); }}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-white cursor-grab active:cursor-grabbing select-none"
-                style={{
-                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                  boxShadow: "0 0 20px rgba(99,102,241,0.4)",
-                  userSelect: "none",
-                  WebkitUserSelect: "none",
-                }}
-                draggable="true"
-              >
-                🎙️ VoiceFlow AI
-              </a>
-              <span className="text-white/30 text-sm">← Drag me to bookmarks bar</span>
-            </div>
-          </div>
+            {/* Download button */}
+            <a
+              href="/voiceflow-extension.zip"
+              download="voiceflow-extension.zip"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-white mb-6"
+              style={{
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                boxShadow: "0 0 20px rgba(99,102,241,0.4)",
+              }}
+            >
+              <Download size={16} />
+              Download Extension (.zip)
+            </a>
 
-          {/* Step 2 — Use it */}
-          <div className="glass rounded-2xl p-6 mb-4 border border-white/6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-sm font-bold">2</div>
-              <h2 className="font-semibold text-lg">Click it on any website</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Install steps */}
+            <h3 className="text-sm font-semibold text-white/70 mb-3 uppercase tracking-wide">How to install (Developer Mode)</h3>
+            <ol className="space-y-4">
               {[
-                { site: "Facebook", action: "Go to Facebook → click in comment box → click VoiceFlow in bookmarks" },
-                { site: "Gmail", action: "Open a compose window → click in email body → click VoiceFlow" },
-                { site: "Twitter/X", action: "Click in tweet box → click VoiceFlow → speak your tweet" },
-                { site: "WhatsApp Web", action: "Click in message box → click VoiceFlow → speak" },
-                { site: "LinkedIn", action: "Click in post/comment → click VoiceFlow → speak" },
-                { site: "Any website", action: "Click any text field → click VoiceFlow → speak" },
-              ].map((item) => (
-                <div key={item.site} className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <Check size={13} className="text-brand-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <div className="text-sm font-medium">{item.site}</div>
-                    <div className="text-xs text-white/40 mt-0.5">{item.action}</div>
+                {
+                  icon: Download,
+                  title: "Download & unzip",
+                  desc: 'Click the button above to download. Then right-click the zip file → "Extract All" → choose a folder you\'ll remember (e.g. Desktop).',
+                },
+                {
+                  icon: Monitor,
+                  title: 'Open Chrome extensions',
+                  desc: (
+                    <>
+                      In Chrome, go to <kbd>chrome://extensions</kbd> — paste that in your address bar and press Enter.
+                    </>
+                  ),
+                },
+                {
+                  icon: ToggleLeft,
+                  title: "Enable Developer Mode",
+                  desc: 'Toggle "Developer mode" ON — it\'s in the top-right corner of the extensions page.',
+                },
+                {
+                  icon: FolderOpen,
+                  title: 'Click "Load unpacked"',
+                  desc: 'A button will appear on the top-left. Click "Load unpacked" and select the unzipped folder (the one containing manifest.json).',
+                },
+                {
+                  icon: Puzzle,
+                  title: "Pin the extension",
+                  desc: 'Click the puzzle icon 🧩 in your Chrome toolbar → find VoiceFlow AI → click the pin icon to keep it visible.',
+                },
+              ].map((step, i) => (
+                <li key={i} className="flex gap-4">
+                  <div className="w-7 h-7 rounded-full bg-brand-600/40 flex items-center justify-center text-sm font-bold text-brand-300 flex-shrink-0 mt-0.5">
+                    {i + 1}
                   </div>
-                </div>
+                  <div>
+                    <div className="font-semibold text-sm text-white/90">{step.title}</div>
+                    <div className="text-xs text-white/45 mt-0.5 leading-relaxed">{step.desc}</div>
+                  </div>
+                </li>
               ))}
-            </div>
+            </ol>
           </div>
 
-          {/* SS shortcut */}
+          {/* Keyboard shortcut */}
           <div className="glass rounded-2xl p-6 mb-4 border border-white/6">
             <div className="flex items-center gap-3 mb-3">
               <Monitor size={20} className="text-brand-400" />
-              <h2 className="font-semibold">Desktop shortcut</h2>
+              <h2 className="font-semibold">How to use</h2>
             </div>
-            <p className="text-white/50 text-sm">
-              Once the widget is loaded on a page, press{" "}
-              <kbd className="text-white/70">S</kbd>{" "}
-              <kbd className="text-white/70">S</kbd>{" "}
-              (double S) anywhere on that page to start/stop recording — even if you're not in a text field.
-            </p>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }}>
+                <div className="flex gap-1 flex-shrink-0 mt-0.5">
+                  <kbd className="text-white/80 text-sm font-bold px-2 py-1">F2</kbd>
+                </div>
+                <div className="text-sm text-white/60">
+                  Press <strong className="text-white/80">F2</strong> anywhere on the page to start recording. Press <strong className="text-white/80">F2</strong> again to stop and insert the transcribed text.
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { site: "Gmail", action: "Open compose → click email body → press F2 to dictate" },
+                  { site: "WhatsApp Web", action: "Click message box → press F2 → speak" },
+                  { site: "Facebook", action: "Click comment/post box → press F2 → speak" },
+                  { site: "LinkedIn", action: "Click post/comment → press F2 → speak" },
+                  { site: "Twitter / X", action: "Click tweet box → press F2 → speak your tweet" },
+                  { site: "Any website", action: "Click any text field → press F2 → speak" },
+                ].map((item) => (
+                  <div key={item.site} className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }}>
+                    <Check size={13} className="text-brand-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="text-sm font-medium">{item.site}</div>
+                      <div className="text-xs text-white/40 mt-0.5">{item.action}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Mobile */}
@@ -112,10 +143,11 @@ export default function InstallPage() {
               <h2 className="font-semibold">Mobile (Android / iPhone)</h2>
             </div>
             <ol className="space-y-2 text-sm text-white/50">
-              <li className="flex gap-2"><span className="text-brand-400 font-bold">1.</span> Open <strong className="text-white/70">linkedwin.io/app</strong> in Chrome</li>
+              <li className="flex gap-2"><span className="text-brand-400 font-bold">1.</span> Open <strong className="text-white/70">linkedwin.io/app</strong> in your browser</li>
               <li className="flex gap-2"><span className="text-brand-400 font-bold">2.</span> Tap menu → <strong className="text-white/70">"Add to Home Screen"</strong></li>
-              <li className="flex gap-2"><span className="text-brand-400 font-bold">3.</span> Now it opens like a native app from your home screen</li>
-              <li className="flex gap-2"><span className="text-brand-400 font-bold">4.</span> Record → Enhanced text auto-copies → switch to any app → paste</li>
+              <li className="flex gap-2"><span className="text-brand-400 font-bold">3.</span> Opens like a native app from your home screen</li>
+              <li className="flex gap-2"><span className="text-brand-400 font-bold">4.</span> Record → enhanced text auto-copies → switch to any app → paste</li>
+              <li className="flex gap-2"><span className="text-brand-400 font-bold">5.</span> <strong className="text-white/70">Android:</strong> Use Kiwi Browser to install the extension on mobile too</li>
             </ol>
           </div>
 
