@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Mic, Eye, EyeOff, ArrowRight, Check, Mail } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-export default function SignupPage() {
+function SignupPageContent() {
   const searchParams = useSearchParams();
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -178,5 +178,13 @@ export default function SignupPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupPageContent />
+    </Suspense>
   );
 }

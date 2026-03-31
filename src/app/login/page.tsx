@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Eye, EyeOff, ArrowRight, X, Mail, Check } from "lucide-react";
 import Link from "next/link";
@@ -118,7 +118,7 @@ function ForgotModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─── Login Page ────────────────────────────────────────────────
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPass, setShowPass] = useState(false);
@@ -242,5 +242,13 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
   );
 }
