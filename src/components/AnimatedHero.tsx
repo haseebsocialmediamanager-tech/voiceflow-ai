@@ -145,8 +145,12 @@ export function AnimatedHero() {
             Start Dictating Free
           </a>
           <a href="#flow-for"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-2xl glass font-medium text-base text-white/60 hover:text-white transition-all touch-manipulation"
-            style={{ WebkitTapHighlightColor: "transparent" }}>
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-medium text-base text-white/60 hover:text-white transition-all touch-manipulation"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.14)",
+              WebkitTapHighlightColor: "transparent",
+            }}>
             Who is it for?
           </a>
         </motion.div>
@@ -161,15 +165,30 @@ export function AnimatedHero() {
           <span>25+ languages supported</span>
         </motion.div>
 
-        {/* Animated flag row — CSS animation, no framer-motion jank */}
+        {/* Animated flag row — seamless right-to-left, no jerk */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
           className="overflow-hidden w-full">
-          {/* CSS-animated track — duplicated for seamless loop */}
-          <div className="flex animate-marquee-fast w-max">
-            {[...FLAGS, ...FLAGS, ...FLAGS].map((cc, i) => (
+          {/* Exactly 2 copies → translate -50% = perfect seamless loop */}
+          <div
+            className="flex w-max"
+            style={{
+              animation: "marquee 40s linear infinite",
+              willChange: "transform",
+              transform: "translateZ(0)",
+            }}
+          >
+            {[...FLAGS, ...FLAGS].map((cc, i) => (
               <span key={i}
-                className={`fi fi-${cc} flex-shrink-0 rounded-lg mx-0.5`}
-                style={{ width: "2.25rem", height: "1.7rem", backgroundSize: "cover", backgroundPosition: "center", display: "inline-block", border: "1px solid rgba(255,255,255,0.07)" }}
+                className={`fi fi-${cc} flex-shrink-0 rounded-xl mx-1.5`}
+                style={{
+                  width: "2.75rem",
+                  height: "2.75rem",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  display: "inline-block",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  flexShrink: 0,
+                }}
               />
             ))}
           </div>
