@@ -55,7 +55,7 @@ export default function AppPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [whisperStatus, setWhisperStatus] = useState<'idle' | 'loading' | 'transcribing'>('idle');
   const [whisperProgress, setWhisperProgress] = useState(0);
-  const [detectedContext, setDetectedContext] = useState<string | null>(null);
+  const [, setDetectedContext] = useState<string | null>(null);
 
   const recognitionRef = useRef<any>(null);
   const accumulatedRef = useRef<string>("");
@@ -426,18 +426,18 @@ export default function AppPage() {
     else startRecording();
   }, [isRecording, startRecording, stopRecording]);
 
-  // F2 shortcut (desktop only)
+  // Ctrl+9 shortcut (desktop only)
   useEffect(() => {
-    function handleF2(e: KeyboardEvent) {
-      if (e.key !== "F2") return;
+    function handleCtrl9(e: KeyboardEvent) {
+      if (!(e.ctrlKey && e.key === "9")) return;
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
       e.preventDefault();
       if (isRecording && isPaused) resumeRecording();
       else toggleRecording();
     }
-    window.addEventListener("keydown", handleF2);
-    return () => window.removeEventListener("keydown", handleF2);
+    window.addEventListener("keydown", handleCtrl9);
+    return () => window.removeEventListener("keydown", handleCtrl9);
   }, [toggleRecording, isRecording, isPaused, resumeRecording]);
 
   const copyLeft = async () => {
@@ -510,7 +510,7 @@ export default function AppPage() {
             <X size={16} />
           </button>
         </div>
-        {!isMobile && <p className="text-center text-xs text-white/25 mt-1.5">F2 to toggle</p>}
+        {!isMobile && <p className="text-center text-xs text-white/25 mt-1.5">Ctrl+9 to toggle</p>}
       </div>
     );
   }
@@ -670,7 +670,7 @@ export default function AppPage() {
               {!isMobile && (
                 <p className="text-xs text-white/25 flex items-center gap-1.5">
                   <Keyboard size={11} />
-                  Press <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-white/8 border border-white/10">F2</kbd> to toggle recording
+                  Press <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-white/8 border border-white/10">Ctrl+9</kbd> to toggle recording
                 </p>
               )}
             </div>
@@ -824,7 +824,7 @@ export default function AppPage() {
                 </span>
               ) : (
                 <span className="text-xs text-white/25">
-                  {isMobile ? "Tap mic to start" : "Click mic or press F2"}
+                  {isMobile ? "Tap mic to start" : "Click mic or press Ctrl+9"}
                 </span>
               )}
             </div>
@@ -1018,7 +1018,7 @@ export default function AppPage() {
         </AnimatePresence>
       </div>
 
-      {/* Floating F2 badge — desktop only */}
+      {/* Floating Ctrl+9 badge — desktop only */}
       {!isMobile && (
         <motion.button onClick={toggleRecording}
           whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
@@ -1033,7 +1033,7 @@ export default function AppPage() {
           <span className="text-xs text-white/60 font-medium">{isRecording && !isPaused ? "Recording..." : isPaused ? "Paused" : "Press"}</span>
           <kbd className="text-xs font-bold px-1.5 py-0.5 rounded-md"
             style={{ background: "rgba(255,255,255,0.1)", color: isRecording && !isPaused ? "#f87171" : isPaused ? "#fcd34d" : "#a5b4fc", border: "1px solid rgba(255,255,255,0.12)" }}>
-            F2
+            Ctrl+9
           </kbd>
           {!isRecording && !isPaused && <span className="text-xs text-white/40">to start</span>}
         </motion.button>

@@ -353,11 +353,9 @@
     }
   }
 
-  /* ── F2 — start / stop recording ────────────────────────── */
+  /* ── F2 — toggle extension sidebar (all sites) ──────────── */
   window.addEventListener('keydown', (e) => {
     if (e.key === 'F2') {
-      // Let the web app handle F2 on its own domain
-      if (window.location.hostname.includes('linkedwin.io')) return;
       e.preventDefault();
       e.stopImmediatePropagation();
       triggerToggle();
