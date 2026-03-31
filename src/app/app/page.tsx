@@ -41,6 +41,7 @@ export default function AppPage() {
   } = useVoiceStore();
 
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
   const [copiedLeft, setCopiedLeft] = useState(false);
   const [copiedRight, setCopiedRight] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -99,10 +100,9 @@ export default function AppPage() {
     } catch {}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Free Google Translate (no API key needed)
+  // Free Google Translate — uses POST to handle long text without URL limits
   const translateText = useCallback(async (text: string, fromLang: string, toLang: string): Promise<string> => {
     if (!toLang || toLang === "none") return text;
-    // Map speech recognition codes to Google Translate codes
     const gtrans: Record<string, string> = {
       "en-US": "en", "en-GB": "en", "ur-PK": "ur", "ar-SA": "ar", "ar-AE": "ar",
       "hi-IN": "hi", "es-ES": "es", "es-MX": "es", "fr-FR": "fr", "de-DE": "de",
@@ -113,10 +113,22 @@ export default function AppPage() {
     const from = gtrans[fromLang] || "auto";
     if (from === toLang) return text;
     try {
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      return data[0].map((c: any) => c[0]).join("");
+      // Split into chunks of 4000 chars to stay within API limits
+      const CHUNK = 4000;
+      const chunks: string[] = [];
+      for (let i = 0; i < text.length; i += CHUNK) chunks.push(text.slice(i, i + CHUNK));
+      const results: string[] = [];
+      for (const chunk of chunks) {
+        const body = new URLSearchParams({ client: "gtx", sl: from, tl: toLang, dt: "t", q: chunk });
+        const res = await fetch("https://translate.googleapis.com/translate_a/single", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: body.toString(),
+        });
+        const data = await res.json();
+        results.push(data[0].map((c: any) => c[0]).join(""));
+      }
+      return results.join(" ");
     } catch {
       return text;
     }
@@ -379,10 +391,18 @@ export default function AppPage() {
 
     // Translate first if a target language is selected
     const toLang = translateToRef.current;
-    const baseText = toLang !== "none"
-      ? await translateText(text, languageRef.current, toLang)
-      : text;
-    setTranslatedResult(toLang !== "none" ? baseText : "");
+    let baseText = text;
+    if (toLang !== "none") {
+      setIsTranslating(true);
+      try {
+        baseText = await translateText(text, languageRef.current, toLang);
+        setTranslatedResult(baseText);
+      } catch {
+        setTranslatedResult(text);
+      } finally {
+        setIsTranslating(false);
+      }
+    }
 
     if (enhanceLevel > 0 && enhanceMode !== "raw") {
       setIsEnhancing(true);
@@ -961,7 +981,11 @@ export default function AppPage() {
                 </span>
               </div>
               <div className="flex-1 px-3.5 py-3 min-h-[100px]">
-                {isEnhancing ? (
+                {isTranslating ? (
+                  <div className="flex items-center gap-2 text-emerald-400 text-xs">
+                    <Loader2 size={11} className="animate-spin" /> Translating...
+                  </div>
+                ) : isEnhancing ? (
                   <div className="flex items-center gap-2 text-brand-400 text-xs">
                     <Loader2 size={11} className="animate-spin" /> Processing...
                   </div>
@@ -977,7 +1001,7 @@ export default function AppPage() {
                   </p>
                 )}
               </div>
-              {rightPanelText && !isRecording && !isEnhancing && (
+              {rightPanelText && !isRecording && !isEnhancing && !isTranslating && (
                 <div className="px-3.5 pb-3 pt-2 flex items-center gap-2 flex-wrap"
                   style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                   <button onClick={copyRight}
