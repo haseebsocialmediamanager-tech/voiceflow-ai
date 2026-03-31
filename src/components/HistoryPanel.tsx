@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { X, Copy, Clock } from "lucide-react";
+import { X, Copy, Clock, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import type { HistoryItem } from "@/lib/store";
 import { useVoiceStore } from "@/lib/store";
@@ -13,6 +14,7 @@ interface Props {
 
 export function HistoryPanel({ history, onClose }: Props) {
   const removeFromHistory = useVoiceStore((s) => s.removeFromHistory);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleCopy = async (text: string) => {
     await navigator.clipboard.writeText(text);
@@ -23,6 +25,15 @@ export function HistoryPanel({ history, onClose }: Props) {
     const d = new Date(iso);
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
+
+  const q = searchQuery.trim().toLowerCase();
+  const filteredHistory = q
+    ? history.filter(
+        (item) =>
+          item.enhanced.toLowerCase().includes(q) ||
+          item.transcript.toLowerCase().includes(q)
+      )
+    : history;
 
   return (
     <motion.aside
@@ -36,6 +47,11 @@ export function HistoryPanel({ history, onClose }: Props) {
         <div className="flex items-center gap-2 text-sm font-medium">
           <Clock size={14} className="text-brand-400" />
           History
+          {q && (
+            <span className="text-[10px] text-white/30 font-normal">
+              {filteredHistory.length}/{history.length}
+            </span>
+          )}
         </div>
         <button
           onClick={onClose}
@@ -45,15 +61,40 @@ export function HistoryPanel({ history, onClose }: Props) {
         </button>
       </div>
 
+      {/* Search input */}
+      <div className="px-3 py-2 border-b border-white/5">
+        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <Search size={12} className="text-white/30 flex-shrink-0" />
+          <input
+            type="text"
+            placeholder="Search history..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 bg-transparent text-xs text-white/70 placeholder-white/25 outline-none"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")} className="text-white/25 hover:text-white/60">
+              <X size={10} />
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="flex-1 overflow-y-auto">
         {history.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-white/20 text-sm py-12">
             <Clock size={32} className="mb-3 opacity-30" />
             No history yet
           </div>
+        ) : filteredHistory.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-white/20 text-sm py-12">
+            <Search size={28} className="mb-3 opacity-30" />
+            No results for &ldquo;{searchQuery}&rdquo;
+          </div>
         ) : (
           <div className="p-3 space-y-2">
-            {history.map((item) => (
+            {filteredHistory.map((item) => (
               <div
                 key={item.id}
                 className="glass rounded-xl p-3 group"

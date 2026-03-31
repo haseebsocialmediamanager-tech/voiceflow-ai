@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic, MicOff, Copy, Trash2, Settings, Clock,
   Check, Loader2, ArrowLeft, ChevronDown, Keyboard, Sparkles, X, Wand2,
+  Pause, Play, Shield, Lock,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -19,6 +20,15 @@ import { RealWaveform } from "@/components/RealWaveform";
 import { getLang, LANGUAGES } from "@/lib/languages";
 import { injectTextAtCursor } from "@/hooks/useTextInjector";
 
+const CONTEXT_SHORTCUTS = [
+  { id: "professional", label: "General", emoji: "💼", domains: [] as string[] },
+  { id: "email", label: "Gmail", emoji: "📧", domains: ["gmail.com", "mail.google.com"] },
+  { id: "slack", label: "Slack", emoji: "💬", domains: ["slack.com"] },
+  { id: "code", label: "Dev", emoji: "💻", domains: ["github.com", "cursor.sh", "gitlab.com"] },
+  { id: "formal", label: "LinkedIn", emoji: "🤝", domains: ["linkedin.com"] },
+  { id: "casual", label: "Social", emoji: "📱", domains: ["twitter.com", "x.com", "facebook.com"] },
+] as const;
+
 export default function AppPage() {
   const router = useRouter();
 
@@ -27,6 +37,7 @@ export default function AppPage() {
     language, history,
     setRecording, setTranscript, setEnhanced, setEnhanceMode,
     setEnhanceLevel, setLanguage, addToHistory, clearCurrent,
+    privacyMode, setPrivacyMode,
   } = useVoiceStore();
 
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -41,6 +52,10 @@ export default function AppPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [translateTo, setTranslateTo] = useState("none");
   const [translatedResult, setTranslatedResult] = useState("");
+  const [isPaused, setIsPaused] = useState(false);
+  const [whisperStatus, setWhisperStatus] = useState<'idle' | 'loading' | 'transcribing'>('idle');
+  const [whisperProgress, setWhisperProgress] = useState(0);
+  const [detectedContext, setDetectedContext] = useState<string | null>(null);
 
   const recognitionRef = useRef<any>(null);
   const accumulatedRef = useRef<string>("");
@@ -48,6 +63,10 @@ export default function AppPage() {
   const languageRef = useRef(language);
   const translateToRef = useRef(translateTo);
   const isLang = getLang(language);
+  const whisperWorkerRef = useRef<Worker | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const pausedTextRef = useRef<string>("");
 
   useEffect(() => { translateToRef.current = translateTo; }, [translateTo]);
 
@@ -60,6 +79,24 @@ export default function AppPage() {
         setAuthChecked(true);
       }
     });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Context auto-detect from referrer ─────────────────────────
+  useEffect(() => {
+    try {
+      const ref = document.referrer;
+      if (ref) {
+        const domain = new URL(ref).hostname.replace('www.', '');
+        for (const ctx of CONTEXT_SHORTCUTS) {
+          if (ctx.domains.some((d) => domain.includes(d))) {
+            setDetectedContext(ctx.id);
+            setEnhanceMode(ctx.id as any);
+            toast.success(`Context: ${ctx.label} mode`, { duration: 2000 });
+            break;
+          }
+        }
+      }
+    } catch {}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Free Google Translate (no API key needed)
@@ -174,6 +211,47 @@ export default function AppPage() {
     if (r) recognitionRef.current = r;
   }, [buildRecognition, language]);
 
+  // ── Whisper worker helpers ───────────────────────────────────
+  const getWhisperWorker = useCallback((): Worker => {
+    if (!whisperWorkerRef.current) {
+      whisperWorkerRef.current = new Worker('/whisper-worker.js');
+    }
+    return whisperWorkerRef.current;
+  }, []);
+
+  const transcribeWithWhisper = useCallback(async (blob: Blob): Promise<string> => {
+    const arrayBuffer = await blob.arrayBuffer();
+    let float32: Float32Array;
+    try {
+      const audioCtx = new AudioContext({ sampleRate: 16000 });
+      const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+      float32 = decoded.getChannelData(0);
+      await audioCtx.close();
+    } catch {
+      throw new Error('Could not decode audio');
+    }
+    return new Promise((resolve, reject) => {
+      const worker = getWhisperWorker();
+      const handler = (e: MessageEvent) => {
+        const { type } = e.data;
+        if (type === 'progress') {
+          setWhisperProgress(e.data.pct || 0);
+          setWhisperStatus('loading');
+        } else if (type === 'result') {
+          worker.removeEventListener('message', handler);
+          setWhisperStatus('idle');
+          resolve(e.data.text);
+        } else if (type === 'error') {
+          worker.removeEventListener('message', handler);
+          setWhisperStatus('idle');
+          reject(new Error(e.data.message));
+        }
+      };
+      worker.addEventListener('message', handler);
+      worker.postMessage({ type: 'transcribe', audio: float32, language: languageRef.current }, [float32.buffer]);
+    });
+  }, [getWhisperWorker]);
+
   const startRecording = useCallback(async () => {
     if (!recognitionRef.current) {
       toast.error("Use Chrome or Edge for voice recording.");
@@ -200,6 +278,18 @@ export default function AppPage() {
     setLiveText("");
     setTranscript("");
     setEnhanced("");
+    setIsPaused(false);
+    pausedTextRef.current = "";
+
+    if (privacyMode) {
+      const stream = streamRef.current!;
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.start(250);
+      mediaRecorderRef.current = recorder;
+    }
 
     try {
       r.start();
@@ -208,7 +298,36 @@ export default function AppPage() {
       toast.error("Could not start recording. Try again.");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buildRecognition, setRecording, setTranscript, setEnhanced, languageRef]);
+  }, [buildRecognition, setRecording, setTranscript, setEnhanced, languageRef, privacyMode]);
+
+  const pauseRecording = useCallback(() => {
+    if (!isRecording || isPaused) return;
+    if (recognitionRef.current) {
+      recognitionRef.current._shouldRestart = false;
+      try { recognitionRef.current.stop(); } catch {}
+    }
+    pausedTextRef.current = accumulatedRef.current;
+    if (mediaRecorderRef.current?.state === 'recording') {
+      try { mediaRecorderRef.current.pause(); } catch {}
+    }
+    setIsPaused(true);
+  }, [isRecording, isPaused]);
+
+  const resumeRecording = useCallback(() => {
+    if (!isRecording || !isPaused) return;
+    accumulatedRef.current = pausedTextRef.current;
+    const r = buildRecognition();
+    if (!r) return;
+    r.lang = languageRef.current;
+    r._shouldRestart = true;
+    recognitionRef.current = r;
+    if (mediaRecorderRef.current?.state === 'paused') {
+      try { mediaRecorderRef.current.resume(); } catch {}
+    }
+    try { r.start(); setIsPaused(false); } catch {
+      toast.error('Could not resume recording.');
+    }
+  }, [isRecording, isPaused, buildRecognition]);
 
   const stopRecording = useCallback(async () => {
     if (recognitionRef.current) {
@@ -221,8 +340,38 @@ export default function AppPage() {
     streamRef.current = null;
     setAudioStream(null);
 
-    const text = accumulatedRef.current.trim();
+    setIsPaused(false);
+
+    let text = accumulatedRef.current.trim() || pausedTextRef.current.trim();
     if (!text) { setLiveText(""); return; }
+
+    // Privacy mode: transcribe locally with Whisper
+    if (privacyMode && mediaRecorderRef.current) {
+      const recorder = mediaRecorderRef.current;
+      mediaRecorderRef.current = null;
+      const blob = await new Promise<Blob>((resolve) => {
+        const chunks = [...audioChunksRef.current];
+        if (recorder.state !== 'inactive') {
+          recorder.onstop = () => resolve(new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' }));
+          recorder.stop();
+        } else {
+          resolve(new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' }));
+        }
+      });
+      if (blob.size > 1000) {
+        try {
+          setWhisperStatus('transcribing');
+          const toastId = 'whisper-toast';
+          toast.loading('Transcribing locally...', { id: toastId });
+          const whisperText = await transcribeWithWhisper(blob);
+          toast.dismiss(toastId);
+          if (whisperText) text = whisperText;
+        } catch {
+          toast.dismiss('whisper-toast');
+          toast.error('Local transcription failed — using browser result');
+        }
+      }
+    }
 
     setTranscript(text);
     setLiveText("");
@@ -239,7 +388,7 @@ export default function AppPage() {
       try {
         const result = await enhanceText(baseText, enhanceMode, enhanceLevel, language);
         setEnhanced(result);
-  
+
         const mode = injectTextAtCursor(result);
         if (mode === "injected") {
           toast.success("Injected at cursor!", { icon: "✍️" });
@@ -247,6 +396,7 @@ export default function AppPage() {
           await navigator.clipboard.writeText(result).catch(() => {});
           toast.success("Enhanced & copied! Paste with Ctrl+V", { icon: "📋", duration: 4000 });
         }
+
         addToHistory({
           id: crypto.randomUUID(), transcript: text, enhanced: result,
           mode: enhanceMode, language, createdAt: new Date().toISOString(),
@@ -268,7 +418,7 @@ export default function AppPage() {
         toast.success("Text injected!", { icon: "✍️" });
       }
     }
-  }, [setRecording, setTranscript, setEnhanced, enhanceMode, enhanceLevel, language, addToHistory, translateText]);
+  }, [setRecording, setTranscript, setEnhanced, enhanceMode, enhanceLevel, language, addToHistory, translateText, privacyMode, transcribeWithWhisper]);
 
   const toggleRecording = useCallback(() => {
     if (isRecording) stopRecording();
@@ -282,11 +432,12 @@ export default function AppPage() {
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
       e.preventDefault();
-      toggleRecording();
+      if (isRecording && isPaused) resumeRecording();
+      else toggleRecording();
     }
     window.addEventListener("keydown", handleF2);
     return () => window.removeEventListener("keydown", handleF2);
-  }, [toggleRecording]);
+  }, [toggleRecording, isRecording, isPaused, resumeRecording]);
 
   const copyLeft = async () => {
     if (!transcript) return;
@@ -367,6 +518,43 @@ export default function AppPage() {
   return (
     <div className="min-h-screen min-h-[100dvh] bg-[#0a0a0f] flex flex-col overflow-hidden">
 
+      {/* Whisper loading overlay */}
+      <AnimatePresence>
+        {(whisperStatus === 'loading' || whisperStatus === 'transcribing') && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)" }}
+          >
+            <div className="glass rounded-3xl p-8 text-center max-w-sm mx-4"
+              style={{ border: "1px solid rgba(99,102,241,0.2)" }}>
+              <div className="w-14 h-14 rounded-2xl bg-brand-600/20 border border-brand-500/30 flex items-center justify-center mx-auto mb-4">
+                <Lock size={24} className="text-brand-400" />
+              </div>
+              <h3 className="font-bold text-lg mb-1">
+                {whisperStatus === 'loading' ? 'Downloading AI Model...' : 'Transcribing Locally...'}
+              </h3>
+              <p className="text-white/40 text-sm mb-4">
+                {whisperStatus === 'loading'
+                  ? `Whisper Tiny (~40MB, first time only) · ${whisperProgress}%`
+                  : 'Your audio is processed on this device only'}
+              </p>
+              {whisperStatus === 'loading' && (
+                <div className="w-full bg-white/10 rounded-full h-1.5 mb-3">
+                  <div className="h-1.5 rounded-full bg-brand-500 transition-all" style={{ width: `${whisperProgress}%` }} />
+                </div>
+              )}
+              {whisperStatus === 'transcribing' && (
+                <div className="flex items-center justify-center gap-2 text-brand-400 text-sm">
+                  <Loader2 size={14} className="animate-spin" />
+                  Processing...
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <motion.div animate={{ opacity: isRecording ? 0.15 : 0.07 }} transition={{ duration: 1 }}
@@ -389,6 +577,11 @@ export default function AppPage() {
               <Mic size={12} className="text-white" />
             </div>
             <span className="text-sm font-semibold tracking-tight text-white hidden xs:block">VoiceFlow</span>
+            {privacyMode && (
+              <span className="hidden sm:flex items-center gap-1 text-[9px] text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">
+                <Lock size={8} /> Private
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
@@ -424,6 +617,55 @@ export default function AppPage() {
             <div className="px-4 py-4 space-y-4">
               <ModeSelector mode={enhanceMode} onChange={setEnhanceMode} />
               <EnhancementSlider value={enhanceLevel} onChange={setEnhanceLevel} />
+
+              {/* Context Shortcuts */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] text-white/25 shrink-0 uppercase tracking-widest">Context:</span>
+                {CONTEXT_SHORTCUTS.map((ctx) => (
+                  <button key={ctx.id}
+                    onClick={() => { setEnhanceMode(ctx.id as any); setDetectedContext(ctx.id); }}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs transition-all ${
+                      enhanceMode === ctx.id
+                        ? "bg-brand-600/30 text-brand-300 border border-brand-500/30"
+                        : "text-white/35 hover:text-white/60 bg-white/5 border border-transparent"
+                    }`}>
+                    <span>{ctx.emoji}</span>
+                    <span>{ctx.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Privacy / Local Mode toggle */}
+              <div className="flex items-center justify-between py-2 border-t border-white/5">
+                <div className="flex items-center gap-2">
+                  <Shield size={13} className={privacyMode ? "text-emerald-400" : "text-white/30"} />
+                  <div>
+                    <span className="text-xs font-medium text-white/70">Local / Offline Mode</span>
+                    <p className="text-[10px] text-white/30 mt-0.5">
+                      {privacyMode ? "Whisper AI on your device — no data sent to servers" : "Web Speech API (browser default)"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    const next = !privacyMode;
+                    setPrivacyMode(next);
+                    if (next) {
+                      toast.success("Privacy mode ON — model downloads ~40MB on first use", { duration: 4000 });
+                      getWhisperWorker(); // pre-initialize
+                    } else {
+                      toast("Privacy mode OFF", { icon: "🔓" });
+                    }
+                  }}
+                  className={`relative w-10 h-6 rounded-full transition-all flex-shrink-0 ${privacyMode ? "bg-emerald-500" : "bg-white/10"}`}>
+                  <motion.div
+                    animate={{ x: privacyMode ? 16 : 2 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="absolute top-1 w-4 h-4 rounded-full bg-white"
+                  />
+                </button>
+              </div>
+
               {!isMobile && (
                 <p className="text-xs text-white/25 flex items-center gap-1.5">
                   <Keyboard size={11} />
@@ -531,25 +773,29 @@ export default function AppPage() {
           {/* ── Mic button + status ── */}
           <div className="flex flex-col items-center mb-6">
             <div className="relative flex items-center justify-center mb-3">
-              {isRecording && [1, 2, 3].map((i) => (
+              {isRecording && !isPaused && [1, 2, 3].map((i) => (
                 <motion.div key={i} className="absolute rounded-full border border-red-500/20"
                   animate={{ scale: [1, 1.9 + i * 0.3], opacity: [0.4, 0] }}
                   transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.4, ease: "easeOut" }}
                   style={{ width: 80, height: 80 }} />
               ))}
-              <motion.button onClick={toggleRecording}
+              <motion.button onClick={isPaused ? resumeRecording : toggleRecording}
                 whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                animate={isRecording
+                animate={isRecording && !isPaused
                   ? { boxShadow: ["0 0 30px rgba(239,68,68,0.4)", "0 0 55px rgba(239,68,68,0.65)", "0 0 30px rgba(239,68,68,0.4)"] }
+                  : isPaused
+                  ? { boxShadow: ["0 0 25px rgba(245,158,11,0.4)", "0 0 45px rgba(245,158,11,0.6)", "0 0 25px rgba(245,158,11,0.4)"] }
                   : { boxShadow: ["0 0 25px rgba(99,102,241,0.35)", "0 0 50px rgba(99,102,241,0.55)", "0 0 25px rgba(99,102,241,0.35)"] }
                 }
                 transition={{ duration: 2, repeat: Infinity }}
                 className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-colors duration-300 touch-manipulation ${
-                  isRecording ? "bg-red-500" : "bg-brand-600"
+                  isPaused ? "bg-amber-500" : isRecording ? "bg-red-500" : "bg-brand-600"
                 }`}
                 style={{ WebkitTapHighlightColor: "transparent" }}>
                 <AnimatePresence mode="wait">
-                  {isRecording
+                  {isPaused
+                    ? <motion.div key="resume" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}><Play size={28} className="text-white" /></motion.div>
+                    : isRecording
                     ? <motion.div key="stop" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}><MicOff size={28} className="text-white" /></motion.div>
                     : <motion.div key="start" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}><Mic size={28} className="text-white" /></motion.div>
                   }
@@ -558,7 +804,13 @@ export default function AppPage() {
             </div>
 
             <div className="flex items-center gap-2 h-5">
-              {isRecording ? (
+              {isPaused ? (
+                <motion.span className="flex items-center gap-2 text-amber-400/80"
+                  animate={{ opacity: [0.7, 1, 0.7] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                  <span className="text-xs">Paused — tap mic to resume</span>
+                </motion.span>
+              ) : isRecording ? (
                 <motion.span className="flex items-center gap-2 text-white/55"
                   animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.5, repeat: Infinity }}>
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
@@ -581,6 +833,37 @@ export default function AppPage() {
                 <RealWaveform stream={audioStream} isActive={isRecording} bars={24} />
               </div>
             )}
+
+            {/* Pause / Resume / Stop buttons */}
+            <AnimatePresence>
+              {isRecording && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  className="flex items-center gap-3 mt-4"
+                >
+                  {!isPaused ? (
+                    <button onClick={pauseRecording}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium touch-manipulation"
+                      style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.25)", color: "#fcd34d" }}>
+                      <Pause size={12} /> Pause
+                    </button>
+                  ) : (
+                    <button onClick={resumeRecording}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium touch-manipulation"
+                      style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "#a5b4fc" }}>
+                      <Play size={12} /> Resume
+                    </button>
+                  )}
+                  <button onClick={stopRecording}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium touch-manipulation"
+                    style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5" }}>
+                    <X size={12} /> Done
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* ── Two output panels — strictly equal width ── */}
@@ -604,13 +887,20 @@ export default function AppPage() {
                 <span className="text-[9px] text-white/20 flex-shrink-0 ml-2">Original</span>
               </div>
               <div className="flex-1 px-3.5 py-3 min-h-[100px]">
-                {isRecording ? (
+                {isRecording && !isPaused ? (
                   <p className="text-sm leading-relaxed text-white/70"
                     dir={isLang.rtl ? "rtl" : "ltr"}
                     style={{ fontFamily: isLang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}>
                     {liveText}
                     <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ duration: 0.8, repeat: Infinity }}
                       className="inline-block w-0.5 h-3.5 bg-brand-400 ml-0.5 align-middle" />
+                  </p>
+                ) : isPaused ? (
+                  <p className="text-sm leading-relaxed text-amber-300/60"
+                    dir={isLang.rtl ? "rtl" : "ltr"}
+                    style={{ fontFamily: isLang.rtl ? "'Noto Naskh Arabic', sans-serif" : undefined }}>
+                    {liveText || transcript}
+                    <span className="text-xs text-amber-400/50 ml-2">⏸ paused</span>
                   </p>
                 ) : transcript ? (
                   <p className="text-sm leading-relaxed text-white/75"
@@ -727,18 +1017,18 @@ export default function AppPage() {
           whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
           className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-2xl select-none"
           style={{
-            background: isRecording ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.12)",
-            border: isRecording ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(99,102,241,0.25)",
+            background: isRecording && !isPaused ? "rgba(239,68,68,0.15)" : isPaused ? "rgba(245,158,11,0.15)" : "rgba(99,102,241,0.12)",
+            border: isRecording && !isPaused ? "1px solid rgba(239,68,68,0.3)" : isPaused ? "1px solid rgba(245,158,11,0.3)" : "1px solid rgba(99,102,241,0.25)",
             backdropFilter: "blur(12px)",
-            boxShadow: isRecording ? "0 0 20px rgba(239,68,68,0.2)" : "0 0 20px rgba(99,102,241,0.15)",
+            boxShadow: isRecording && !isPaused ? "0 0 20px rgba(239,68,68,0.2)" : isPaused ? "0 0 20px rgba(245,158,11,0.15)" : "0 0 20px rgba(99,102,241,0.15)",
           }}>
-          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRecording ? "bg-red-400 animate-pulse" : "bg-brand-400"}`} />
-          <span className="text-xs text-white/60 font-medium">{isRecording ? "Recording..." : "Press"}</span>
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRecording && !isPaused ? "bg-red-400 animate-pulse" : isPaused ? "bg-amber-400 animate-pulse" : "bg-brand-400"}`} />
+          <span className="text-xs text-white/60 font-medium">{isRecording && !isPaused ? "Recording..." : isPaused ? "Paused" : "Press"}</span>
           <kbd className="text-xs font-bold px-1.5 py-0.5 rounded-md"
-            style={{ background: "rgba(255,255,255,0.1)", color: isRecording ? "#f87171" : "#a5b4fc", border: "1px solid rgba(255,255,255,0.12)" }}>
+            style={{ background: "rgba(255,255,255,0.1)", color: isRecording && !isPaused ? "#f87171" : isPaused ? "#fcd34d" : "#a5b4fc", border: "1px solid rgba(255,255,255,0.12)" }}>
             F2
           </kbd>
-          {!isRecording && <span className="text-xs text-white/40">to start</span>}
+          {!isRecording && !isPaused && <span className="text-xs text-white/40">to start</span>}
         </motion.button>
       )}
     </div>

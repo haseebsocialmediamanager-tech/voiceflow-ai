@@ -27,6 +27,7 @@ interface VoiceState {
   enhanceLevel: number; // 0-100
   language: string;
   history: HistoryItem[];
+  privacyMode: boolean;
 
   setRecording: (v: boolean) => void;
   setTranscript: (v: string) => void;
@@ -37,6 +38,7 @@ interface VoiceState {
   addToHistory: (item: HistoryItem) => void;
   clearCurrent: () => void;
   removeFromHistory: (id: string) => void;
+  setPrivacyMode: (v: boolean) => void;
 }
 
 export const useVoiceStore = create<VoiceState>()(
@@ -49,6 +51,7 @@ export const useVoiceStore = create<VoiceState>()(
       enhanceLevel: 60,
       language: "en-US",
       history: [],
+      privacyMode: false,
 
       setRecording: (v) => set({ isRecording: v }),
       setTranscript: (v) => set({ transcript: v }),
@@ -68,6 +71,8 @@ export const useVoiceStore = create<VoiceState>()(
         set((state) => ({
           history: state.history.filter((h) => h.id !== id),
         })),
+
+      setPrivacyMode: (v) => set({ privacyMode: v }),
     }),
     {
       name: "voiceflow-storage",
@@ -76,6 +81,7 @@ export const useVoiceStore = create<VoiceState>()(
         enhanceLevel: state.enhanceLevel,
         language: state.language,
         history: state.history,
+        privacyMode: state.privacyMode,
       }),
     }
   )
