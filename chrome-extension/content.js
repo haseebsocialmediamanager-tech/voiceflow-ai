@@ -353,9 +353,11 @@
     }
   }
 
-  /* ── F1 — start / stop recording ────────────────────────── */
+  /* ── F2 — start / stop recording ────────────────────────── */
   window.addEventListener('keydown', (e) => {
     if (e.key === 'F2') {
+      // Let the web app handle F2 on its own domain
+      if (window.location.hostname.includes('linkedwin.io')) return;
       e.preventDefault();
       e.stopImmediatePropagation();
       triggerToggle();

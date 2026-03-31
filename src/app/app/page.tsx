@@ -278,6 +278,7 @@ export default function AppPage() {
     setLiveText("");
     setTranscript("");
     setEnhanced("");
+    setTranslatedResult("");
     setIsPaused(false);
     pausedTextRef.current = "";
 
@@ -996,6 +997,12 @@ export default function AppPage() {
                       <Wand2 size={11} /> Enhance
                     </button>
                   )}
+                  <button
+                    onClick={() => { setTranslatedResult(""); setEnhanced(""); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-white/25 hover:text-red-400 transition-colors touch-manipulation"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <Trash2 size={11} /> Clear
+                  </button>
                 </div>
               )}
             </div>
