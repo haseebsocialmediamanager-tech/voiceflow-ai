@@ -27,7 +27,8 @@ const LANGUAGES_TICKER = [
   { text: "فارسی سلام!", lang: "Persian", rtl: true },
 ];
 
-const FLAGS = ["🇺🇸","🇵🇰","🇸🇦","🇮🇳","🇪🇸","🇫🇷","🇩🇪","🇨🇳","🇯🇵","🇰🇷","🇷🇺","🇮🇷","🇧🇩","🇧🇷","🇹🇷","🇮🇩"];
+// Country codes for flag-icons CSS (works on Windows — no emoji rendering issues)
+const FLAGS = ["us","pk","sa","in","es","fr","de","cn","jp","kr","ru","ir","bd","br","tr","id"];
 
 export function AnimatedHero() {
   const [wordIndex, setWordIndex] = useState(0);
@@ -165,12 +166,11 @@ export function AnimatedHero() {
           className="overflow-hidden w-full">
           {/* CSS-animated track — duplicated for seamless loop */}
           <div className="flex animate-marquee-fast w-max">
-            {[...FLAGS, ...FLAGS, ...FLAGS].map((flag, i) => (
+            {[...FLAGS, ...FLAGS, ...FLAGS].map((cc, i) => (
               <span key={i}
-                className="text-xl flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl mx-0.5"
-                style={{ background: "rgba(255,255,255,0.04)" }}>
-                {flag}
-              </span>
+                className={`fi fi-${cc} flex-shrink-0 rounded-lg mx-0.5`}
+                style={{ width: "2.25rem", height: "1.7rem", backgroundSize: "cover", backgroundPosition: "center", display: "inline-block", border: "1px solid rgba(255,255,255,0.07)" }}
+              />
             ))}
           </div>
         </motion.div>

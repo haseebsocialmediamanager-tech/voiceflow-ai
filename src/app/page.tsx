@@ -159,7 +159,8 @@ function LanguageModal({ onClose }: { onClose: () => void }) {
                 onClick={() => handleSelectLang(lang.code)}
                 className="flex items-center gap-3 p-3 rounded-2xl text-left transition-all hover:bg-white/5 active:scale-95 border border-transparent hover:border-white/8"
               >
-                <span className="text-2xl flex-shrink-0">{lang.flag}</span>
+                <span className={`fi fi-${lang.code.split("-")[1]?.toLowerCase()} rounded flex-shrink-0`}
+                  style={{ width: "2rem", height: "1.5rem", backgroundSize: "cover", backgroundPosition: "center", display: "inline-block" }} />
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-white/80 truncate"
                     dir={lang.rtl ? "rtl" : "ltr"}
@@ -312,18 +313,18 @@ export default function LandingPage() {
 
         <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-4 sm:px-6 max-w-4xl mx-auto">
           {[
-            { flag: "🇺🇸", lang: "English", code: "en-US" },
-            { flag: "🇵🇰", lang: "اردو (Urdu)", code: "ur-PK" },
-            { flag: "🇸🇦", lang: "العربية (Arabic)", code: "ar-SA" },
-            { flag: "🇮🇳", lang: "हिन्दी (Hindi)", code: "hi-IN" },
-            { flag: "🇪🇸", lang: "Español", code: "es-ES" },
-            { flag: "🇫🇷", lang: "Français", code: "fr-FR" },
-            { flag: "🇩🇪", lang: "Deutsch", code: "de-DE" },
-            { flag: "🇨🇳", lang: "中文", code: "zh-CN" },
-            { flag: "🇯🇵", lang: "日本語", code: "ja-JP" },
-            { flag: "🇰🇷", lang: "한국어", code: "ko-KR" },
-            { flag: "🇷🇺", lang: "Русский", code: "ru-RU" },
-          ].map(({ flag, lang, code }, i) => (
+            { cc: "us", lang: "English", code: "en-US" },
+            { cc: "pk", lang: "اردو (Urdu)", code: "ur-PK" },
+            { cc: "sa", lang: "العربية (Arabic)", code: "ar-SA" },
+            { cc: "in", lang: "हिन्दी (Hindi)", code: "hi-IN" },
+            { cc: "es", lang: "Español", code: "es-ES" },
+            { cc: "fr", lang: "Français", code: "fr-FR" },
+            { cc: "de", lang: "Deutsch", code: "de-DE" },
+            { cc: "cn", lang: "中文", code: "zh-CN" },
+            { cc: "jp", lang: "日本語", code: "ja-JP" },
+            { cc: "kr", lang: "한국어", code: "ko-KR" },
+            { cc: "ru", lang: "Русский", code: "ru-RU" },
+          ].map(({ cc, lang, code }, i) => (
             <motion.a
               key={lang} href={`/signup?next=/app?lang=${code}`}
               initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }}
@@ -331,7 +332,8 @@ export default function LandingPage() {
               whileHover={{ scale: 1.06, y: -2 }}
               className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl glass border border-white/6 cursor-pointer hover:border-brand-500/30 transition-colors"
             >
-              <span className="text-lg sm:text-xl">{flag}</span>
+              <span className={`fi fi-${cc} rounded flex-shrink-0`}
+                style={{ width: "1.5rem", height: "1.1rem", backgroundSize: "cover", backgroundPosition: "center", display: "inline-block" }} />
               <span className="text-xs sm:text-sm text-white/60">{lang}</span>
             </motion.a>
           ))}
