@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mic, Smartphone, Monitor, Check, Download, FolderOpen, ToggleLeft, Puzzle } from "lucide-react";
+import { Mic, Smartphone, Monitor, Check, Download, FolderOpen, ToggleLeft, Puzzle, Globe } from "lucide-react";
 import Link from "next/link";
 
 export default function InstallPage() {
@@ -28,6 +28,27 @@ export default function InstallPage() {
             Use voice dictation in any text box on any website — Gmail, WhatsApp, Facebook, LinkedIn and more.
           </p>
 
+          {/* Shortcut Overview */}
+          <div className="glass rounded-2xl p-5 mb-6 border border-white/8">
+            <p className="text-xs font-bold text-white/40 uppercase tracking-widest mb-3">Keyboard Shortcuts</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)" }}>
+                <kbd className="text-brand-300 font-bold px-2.5 py-1 rounded-lg text-sm flex-shrink-0" style={{ background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.4)" }}>F2</kbd>
+                <div>
+                  <div className="text-sm font-semibold text-white/80">Extension Sidebar</div>
+                  <div className="text-xs text-white/40 mt-0.5">Toggle the Chrome extension on any website — Gmail, WhatsApp, LinkedIn, etc.</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)" }}>
+                <kbd className="text-emerald-300 font-bold px-2.5 py-1 rounded-lg text-sm flex-shrink-0 whitespace-nowrap" style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}>Ctrl+9</kbd>
+                <div>
+                  <div className="text-sm font-semibold text-white/80">Web App Mic</div>
+                  <div className="text-xs text-white/40 mt-0.5">Start / stop recording directly on <strong className="text-white/60">linkedwin.io/app</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Chrome Extension — Primary */}
           <div className="rounded-2xl p-6 mb-4 border border-brand-500/30" style={{ background: "rgba(99,102,241,0.08)" }}>
             <div className="flex items-center gap-3 mb-2">
@@ -36,7 +57,7 @@ export default function InstallPage() {
               <span className="ml-auto text-xs text-brand-300 bg-brand-500/20 px-2 py-0.5 rounded-full">Recommended</span>
             </div>
             <p className="text-white/50 text-sm mb-5">
-              Works on Chrome, Brave, Edge, Opera. Press <kbd>F2</kbd> anywhere to start/stop recording.
+              Works on Chrome, Brave, Edge, Opera. Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white/80 text-xs font-bold">F2</kbd> anywhere to open the sidebar and dictate into any text box.
             </p>
 
             {/* Download button */}
@@ -64,10 +85,10 @@ export default function InstallPage() {
                 },
                 {
                   icon: Monitor,
-                  title: 'Open Chrome extensions',
+                  title: "Open Chrome extensions",
                   desc: (
                     <>
-                      In Chrome, go to <kbd>chrome://extensions</kbd> — paste that in your address bar and press Enter.
+                      In Chrome, go to <kbd className="px-1 py-0.5 rounded bg-white/10 text-xs">chrome://extensions</kbd> — paste that in your address bar and press Enter.
                     </>
                   ),
                 },
@@ -100,19 +121,17 @@ export default function InstallPage() {
             </ol>
           </div>
 
-          {/* Keyboard shortcut */}
+          {/* How to use — Extension */}
           <div className="glass rounded-2xl p-6 mb-4 border border-white/6">
             <div className="flex items-center gap-3 mb-3">
               <Monitor size={20} className="text-brand-400" />
-              <h2 className="font-semibold">How to use</h2>
+              <h2 className="font-semibold">Using the Extension (F2)</h2>
             </div>
             <div className="space-y-3">
               <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }}>
-                <div className="flex gap-1 flex-shrink-0 mt-0.5">
-                  <kbd className="text-white/80 text-sm font-bold px-2 py-1">F2</kbd>
-                </div>
+                <kbd className="text-white/80 text-sm font-bold px-2 py-1 rounded bg-white/10 flex-shrink-0 mt-0.5">F2</kbd>
                 <div className="text-sm text-white/60">
-                  Press <strong className="text-white/80">F2</strong> anywhere on the page to start recording. Press <strong className="text-white/80">F2</strong> again to stop and insert the transcribed text.
+                  Press <strong className="text-white/80">F2</strong> anywhere on the page to open the extension sidebar and start recording. Press <strong className="text-white/80">F2</strong> again to stop — text is automatically inserted into the focused field.
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -136,6 +155,35 @@ export default function InstallPage() {
             </div>
           </div>
 
+          {/* Web App shortcut */}
+          <div className="glass rounded-2xl p-6 mb-4 border border-white/6">
+            <div className="flex items-center gap-3 mb-3">
+              <Globe size={20} className="text-emerald-400" />
+              <h2 className="font-semibold">Using the Web App (Ctrl+9)</h2>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-xl mb-3" style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)" }}>
+              <kbd className="text-emerald-300 font-bold px-2 py-1 rounded text-sm flex-shrink-0 mt-0.5 whitespace-nowrap" style={{ background: "rgba(16,185,129,0.15)" }}>Ctrl+9</kbd>
+              <div className="text-sm text-white/60">
+                On <strong className="text-white/80">linkedwin.io/app</strong> press <strong className="text-emerald-300">Ctrl+9</strong> to start or stop recording. Speak in any language, optionally translate to another, then copy or inject the text.
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { label: "Start recording", key: "Ctrl+9" },
+                { label: "Stop recording", key: "Ctrl+9" },
+                { label: "Pause mid-speech", key: "Pause button" },
+                { label: "Resume paused", key: "Ctrl+9 or Resume" },
+                { label: "Translate output", key: "Pick language → record" },
+                { label: "Copy result", key: "Copy button" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }}>
+                  <span className="text-sm text-white/55">{item.label}</span>
+                  <kbd className="text-xs px-2 py-0.5 rounded font-medium text-white/70" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}>{item.key}</kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Mobile */}
           <div className="glass rounded-2xl p-6 mb-8 border border-white/6">
             <div className="flex items-center gap-3 mb-3">
@@ -146,7 +194,7 @@ export default function InstallPage() {
               <li className="flex gap-2"><span className="text-brand-400 font-bold">1.</span> Open <strong className="text-white/70">linkedwin.io/app</strong> in your browser</li>
               <li className="flex gap-2"><span className="text-brand-400 font-bold">2.</span> Tap menu → <strong className="text-white/70">"Add to Home Screen"</strong></li>
               <li className="flex gap-2"><span className="text-brand-400 font-bold">3.</span> Opens like a native app from your home screen</li>
-              <li className="flex gap-2"><span className="text-brand-400 font-bold">4.</span> Record → enhanced text auto-copies → switch to any app → paste</li>
+              <li className="flex gap-2"><span className="text-brand-400 font-bold">4.</span> Tap the mic button to record — enhanced text auto-copies → switch to any app → paste</li>
               <li className="flex gap-2"><span className="text-brand-400 font-bold">5.</span> <strong className="text-white/70">Android:</strong> Use Kiwi Browser to install the extension on mobile too</li>
             </ol>
           </div>

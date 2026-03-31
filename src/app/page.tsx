@@ -374,7 +374,7 @@ export default function LandingPage() {
                 <span className="gradient-text">any text box</span>
               </h2>
               <p className="text-white/50 text-base mb-6 leading-relaxed">
-                Install the extension and press <kbd>F2</kbd> to start/stop recording on Gmail, WhatsApp Web, Facebook, LinkedIn — everywhere on the web.
+                Install the extension and press <kbd>F2</kbd> to open the sidebar on Gmail, WhatsApp, LinkedIn — everywhere. Use <kbd>Ctrl+9</kbd> on the web app.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
@@ -400,7 +400,7 @@ export default function LandingPage() {
                 { step: "2", text: "Open chrome://extensions in Chrome" },
                 { step: "3", text: 'Enable "Developer mode" (top-right toggle)' },
                 { step: "4", text: 'Click "Load unpacked" → select the unzipped folder' },
-                { step: "5", text: "Press F2 on any page to start dictating" },
+                { step: "5", text: "Press F2 on any site to dictate · Ctrl+9 on the web app" },
               ].map(({ step, text }) => (
                 <div key={step} className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
                   <div className="w-7 h-7 rounded-full bg-brand-600/40 flex items-center justify-center text-xs font-bold text-brand-300 flex-shrink-0">
