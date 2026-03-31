@@ -167,7 +167,11 @@ export function AnimatedHero() {
 
         {/* Animated flag row — seamless right-to-left, no jerk */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
-          className="overflow-hidden w-full">
+          className="overflow-hidden w-full"
+          style={{
+            WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)",
+            maskImage: "linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)",
+          }}>
           {/* Exactly 2 copies → translate -50% = perfect seamless loop */}
           <div
             className="flex w-max"
