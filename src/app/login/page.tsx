@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Eye, EyeOff, ArrowRight, X, Mail, Check } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 // ─── Forgot Password Modal ─────────────────────────────────────
@@ -120,6 +120,7 @@ function ForgotModal({ onClose }: { onClose: () => void }) {
 // ─── Login Page ────────────────────────────────────────────────
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -154,7 +155,8 @@ export default function LoginPage() {
         setError(err.message);
       }
     } else {
-      router.push("/app");
+      const next = searchParams.get("next") || "/app";
+      router.push(next);
     }
   };
 

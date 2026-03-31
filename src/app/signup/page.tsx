@@ -4,9 +4,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mic, Eye, EyeOff, ArrowRight, Check, Mail } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function SignupPage() {
+  const searchParams = useSearchParams();
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -36,7 +38,7 @@ export default function SignupPage() {
           phone: form.phone.trim(),
           plan: "free",
         },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/app`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}${searchParams.get("next") || "/app"}`,
       },
     });
 
@@ -164,7 +166,7 @@ export default function SignupPage() {
 
               <p className="text-center text-xs text-white/25 mt-6">
                 Already have an account?{" "}
-                <Link href="/login" className="text-brand-400 hover:text-brand-300 transition-colors">Sign in</Link>
+                <Link href={`/login${searchParams.get("next") ? `?next=${searchParams.get("next")}` : ""}`} className="text-brand-400 hover:text-brand-300 transition-colors">Sign in</Link>
               </p>
               <p className="text-center text-xs text-white/20 mt-3 leading-relaxed">
                 By signing up you agree to our{" "}

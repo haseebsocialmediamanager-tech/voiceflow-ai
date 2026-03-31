@@ -124,7 +124,7 @@ function LanguageModal({ onClose }: { onClose: () => void }) {
 
   const handleSelectLang = (code: string) => {
     onClose();
-    router.push(`/app?lang=${code}`);
+    router.push(`/signup?next=/app?lang=${code}`);
   };
 
   return (
@@ -218,11 +218,11 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-6 lg:gap-8 text-sm text-white/50">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
+            <Link href="/features" className="hover:text-white transition-colors">Features</Link>
             <a href="#flow-for" className="hover:text-white transition-colors">Use Cases</a>
             <a href="#compare" className="hover:text-white transition-colors">Compare</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <Link href="/install" className="hover:text-white transition-colors text-brand-400">Use Everywhere ↗</Link>
+            <Link href="/install" className="hover:text-white transition-colors text-brand-400">Install ↗</Link>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -325,7 +325,7 @@ export default function LandingPage() {
             { flag: "🇷🇺", lang: "Русский", code: "ru-RU" },
           ].map(({ flag, lang, code }, i) => (
             <motion.a
-              key={lang} href={`/app?lang=${code}`}
+              key={lang} href={`/signup?next=/app?lang=${code}`}
               initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }} transition={{ delay: i * 0.04 }}
               whileHover={{ scale: 1.06, y: -2 }}
